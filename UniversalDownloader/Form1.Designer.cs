@@ -39,13 +39,17 @@
             this.label2 = new System.Windows.Forms.Label();
             this.ProgressLabel = new System.Windows.Forms.Label();
             this.webClientControl = new System.Net.WebClient();
+            this.DestinationTextBox = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.SaveAsButton = new System.Windows.Forms.Button();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.SuspendLayout();
             // 
             // DownloadProgressBar
             // 
-            this.DownloadProgressBar.Location = new System.Drawing.Point(28, 108);
+            this.DownloadProgressBar.Location = new System.Drawing.Point(12, 153);
             this.DownloadProgressBar.Name = "DownloadProgressBar";
-            this.DownloadProgressBar.Size = new System.Drawing.Size(226, 23);
+            this.DownloadProgressBar.Size = new System.Drawing.Size(340, 23);
             this.DownloadProgressBar.TabIndex = 0;
             // 
             // EnterUrlLabel
@@ -61,7 +65,7 @@
             // urlTextBox
             // 
             this.urlTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.urlTextBox.Location = new System.Drawing.Point(66, 27);
+            this.urlTextBox.Location = new System.Drawing.Point(122, 27);
             this.urlTextBox.Multiline = true;
             this.urlTextBox.Name = "urlTextBox";
             this.urlTextBox.Size = new System.Drawing.Size(187, 34);
@@ -72,7 +76,7 @@
             this.ErrorLabel.AutoSize = true;
             this.ErrorLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ErrorLabel.ForeColor = System.Drawing.Color.Red;
-            this.ErrorLabel.Location = new System.Drawing.Point(25, 199);
+            this.ErrorLabel.Location = new System.Drawing.Point(57, 244);
             this.ErrorLabel.Name = "ErrorLabel";
             this.ErrorLabel.Size = new System.Drawing.Size(0, 19);
             this.ErrorLabel.TabIndex = 3;
@@ -80,7 +84,7 @@
             // DownloadButton
             // 
             this.DownloadButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DownloadButton.Location = new System.Drawing.Point(90, 67);
+            this.DownloadButton.Location = new System.Drawing.Point(122, 112);
             this.DownloadButton.Name = "DownloadButton";
             this.DownloadButton.Size = new System.Drawing.Size(98, 35);
             this.DownloadButton.TabIndex = 4;
@@ -92,7 +96,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(25, 134);
+            this.label1.Location = new System.Drawing.Point(57, 179);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(127, 19);
             this.label1.TabIndex = 5;
@@ -103,7 +107,7 @@
             this.DownloadSpeedLabel.AutoSize = true;
             this.DownloadSpeedLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DownloadSpeedLabel.ForeColor = System.Drawing.Color.Green;
-            this.DownloadSpeedLabel.Location = new System.Drawing.Point(172, 139);
+            this.DownloadSpeedLabel.Location = new System.Drawing.Point(204, 184);
             this.DownloadSpeedLabel.Name = "DownloadSpeedLabel";
             this.DownloadSpeedLabel.Size = new System.Drawing.Size(0, 26);
             this.DownloadSpeedLabel.TabIndex = 6;
@@ -111,7 +115,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(26, 153);
+            this.label2.Location = new System.Drawing.Point(58, 198);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(134, 13);
             this.label2.TabIndex = 7;
@@ -122,14 +126,14 @@
             this.ProgressLabel.AutoSize = true;
             this.ProgressLabel.BackColor = System.Drawing.Color.Transparent;
             this.ProgressLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ProgressLabel.Location = new System.Drawing.Point(122, 110);
+            this.ProgressLabel.Location = new System.Drawing.Point(163, 155);
             this.ProgressLabel.Name = "ProgressLabel";
             this.ProgressLabel.Size = new System.Drawing.Size(29, 19);
             this.ProgressLabel.TabIndex = 8;
             this.ProgressLabel.Text = "0%";
             // 
             // webClientControl
-            //  
+            // 
             this.webClientControl.BaseAddress = "";
             this.webClientControl.CachePolicy = null;
             this.webClientControl.Credentials = null;
@@ -139,11 +143,44 @@
             this.webClientControl.UseDefaultCredentials = false;
             this.webClientControl.DownloadProgressChanged += new System.Net.DownloadProgressChangedEventHandler(this.webClientControl_DownloadProgressChanged);
             // 
+            // DestinationTextBox
+            // 
+            this.DestinationTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DestinationTextBox.Location = new System.Drawing.Point(122, 67);
+            this.DestinationTextBox.Multiline = true;
+            this.DestinationTextBox.Name = "DestinationTextBox";
+            this.DestinationTextBox.Size = new System.Drawing.Size(187, 34);
+            this.DestinationTextBox.TabIndex = 10;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(25, 74);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(90, 19);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "Destination:";
+            // 
+            // SaveAsButton
+            // 
+            this.SaveAsButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.SaveAsButton.Image = global::UniversalDownloaderAgoda.Properties.Resources.save_as;
+            this.SaveAsButton.Location = new System.Drawing.Point(315, 69);
+            this.SaveAsButton.Name = "SaveAsButton";
+            this.SaveAsButton.Size = new System.Drawing.Size(37, 31);
+            this.SaveAsButton.TabIndex = 11;
+            this.SaveAsButton.UseVisualStyleBackColor = true;
+            this.SaveAsButton.Click += new System.EventHandler(this.SaveAsButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.ClientSize = new System.Drawing.Size(365, 336);
+            this.Controls.Add(this.SaveAsButton);
+            this.Controls.Add(this.DestinationTextBox);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.ProgressLabel);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.DownloadSpeedLabel);
@@ -172,6 +209,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label ProgressLabel;
         private System.Net.WebClient webClientControl;
+        private System.Windows.Forms.TextBox DestinationTextBox;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button SaveAsButton;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }
 

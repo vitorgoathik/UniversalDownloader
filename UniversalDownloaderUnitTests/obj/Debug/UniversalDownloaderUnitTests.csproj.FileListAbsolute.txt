@@ -1,0 +1,1 @@
+C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\obj\Debug\UniversalDownloaderUnitTests.csprojResolveAssemblyReference.cache
