@@ -5,24 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static BatchDownloaderUC.Enums;
 
-namespace UniversalDownloaderAgoda
+namespace BatchDownloaderUC
 {
-    public class ValidationTests
+    public static class ValidationTests
     {
-        //source: @diegoperini https://mathiasbynens.be/demo/url-regex
         public const string UrlRegexPattern = @"^(https?|s?ftp)://[^\s/$.?#].[^\s]*$";
+
+
 
         /// <summary>
         /// Tests whether all the urls in the property are valid
         /// </summary>
-        /// <returns>invalid urls separated by ; or a format error message</returns>
-        public string AreAllUrlsValid(string urls)
+        /// <param name="urls">list of concateneted urls</param>
+        /// <param name="splittingChar">Character used to split the string</param>
+        /// <param name="invalidUrls">invalid urls separated by ; or a format error message</param>
+        /// <returns>if they are valid</returns>
+        public static bool AreAllUrlsValid(string urls, UrlSplittingChar splittingChar, out string invalidUrls)
         {
-            string invalidUrls = "";
+            invalidUrls = "";
             try
             {
-                foreach (string url in urls.Replace(" ","").Split(';'))
+                foreach (string url in urls.Replace(" ", "").Split(Functions.GetUrlSplittingChar(splittingChar)))
                 {
                     if (!IsUrlValid(url))
                         invalidUrls += url + ";";
@@ -30,9 +35,10 @@ namespace UniversalDownloaderAgoda
             }
             catch (Exception e)
             {
-                return "Error when splitting the url text by semicolon";
+                invalidUrls = String.Format("Error when splitting the url text by {0}: {1}", splittingChar, e.InnerException);
+                return false;
             }
-            return invalidUrls;
+            return invalidUrls == "";
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ namespace UniversalDownloaderAgoda
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public bool IsUrlValid(string url)
+        public static bool IsUrlValid(string url)
         {
             return Regex.Match(url, UrlRegexPattern).Success;
         }
@@ -50,12 +56,17 @@ namespace UniversalDownloaderAgoda
         /// </summary>
         /// <param name="destination">destination folder</param>
         /// <returns>if it exists in the disk</returns>
-        public bool IsDestinationValid(string destination)
+        public static bool IsDestinationValid(string destination)
         {
             destination = destination.Replace("/", @"\");
             if (!destination.Contains(@"\"))
                 return false;
             return Directory.Exists(destination.Substring(0, destination.LastIndexOf(@"\")));
+        }
+
+        public static bool IsDriverSpaceSufficient(string destination, List<string> listUrls)
+        {
+            return Functions.GetTotalFreeSpace(destination) - Functions.CheckListFileTotalSize(listUrls) > 0;
         }
     }
 }

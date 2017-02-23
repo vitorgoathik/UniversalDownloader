@@ -58,6 +58,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BatchDownloaderUC\BatchDownloaderUC.csproj">
+      <Project>{cb759ec1-2dae-432c-ba20-7b3727c60e7e}</Project>
+      <Name>BatchDownloaderUC</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UniversalDownloader\UniversalDownloader.csproj">
       <Project>{6c7c2e34-6b04-4d85-9790-6a9aa53b57a5}</Project>
       <Name>UniversalDownloader</Name>

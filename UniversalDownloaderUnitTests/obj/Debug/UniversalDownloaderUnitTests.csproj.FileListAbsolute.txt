@@ -3,8 +3,10 @@ C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\Unive
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\UniversalDownloaderUnitTests.pdb
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\nunit.framework.dll
-C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\UniversalDownloaderAgoda.exe
-C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\UniversalDownloaderAgoda.pdb
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\nunit.framework.xml
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\obj\Debug\UniversalDownloaderUnitTests.dll
 C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\obj\Debug\UniversalDownloaderUnitTests.pdb
+C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\BatchDownloaderUC.dll
+C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\UniversalDownloader.exe
+C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\BatchDownloaderUC.pdb
+C:\Users\goathik\Documents\Visual Studio 2015\Projects\UniversalDownloader\UniversalDownloaderUnitTests\bin\Debug\UniversalDownloader.pdb

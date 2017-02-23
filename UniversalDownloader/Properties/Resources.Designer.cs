@@ -63,10 +63,20 @@ namespace UniversalDownloader.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap save_as {
+        internal static System.Drawing.Bitmap saveonfolder {
             get {
-                object obj = ResourceManager.GetObject("save-as", resourceCulture);
+                object obj = ResourceManager.GetObject("saveonfolder", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon SystemIcon {
+            get {
+                object obj = ResourceManager.GetObject("SystemIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }
