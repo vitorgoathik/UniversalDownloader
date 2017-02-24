@@ -40,8 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Download.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="DownloadSpeed.cs" />
+    <Compile Include="Models\DownloadingProcess.cs" />
+    <Compile Include="Models\FileInfo.cs" />
+    <Compile Include="Models\FtpInfo.cs" />
+    <Compile Include="Models\FtpDirectoryInfo.cs" />
+    <Compile Include="Models\HttpFileInfo.cs" />
+    <Compile Include="Models\Uri.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Events\DownloadStartedEventArgs.cs" />
     <Compile Include="Events\ProcessCompletedEventArgs.cs" />
@@ -53,6 +60,9 @@
     <Compile Include="IDownloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValidationTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Functions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

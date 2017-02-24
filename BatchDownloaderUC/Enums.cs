@@ -13,5 +13,17 @@ namespace BatchDownloaderUC
             Semicolon,
             Comma
         }
+        public enum Protocol
+        {
+            Http,
+            Ftp,
+            Sftp
+        }
+        public enum DownloadState
+        {
+            Started,
+            Completed,
+            Pending
+        }
     }
 }

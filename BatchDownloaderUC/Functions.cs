@@ -13,30 +13,14 @@ namespace BatchDownloaderUC
 {
     public static class Functions
     {
-        /// <summary>
-        /// Will return the last piece of the url, which is the file name
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        public static string GetFileName(string url)
-        {
-            if (!ValidationTests.IsUrlValid(url))
-                throw new Exception("Url is not valid");
-            string name = System.IO.Path.GetFileName(url);
-            if (name.Contains("?"))
-                name = name.Substring(0, name.IndexOf("?"));
-            if (name == "")
-                return url;
-            return name;
-        }
 
         /// <summary>
-        /// Convert a concateneted String of URLs to a Queue
+        /// Convert a concateneted String of URLs to a List
         /// </summary>
         /// <param name="urls"></param>
         /// <param name="splittingChar"></param>
         /// <returns></returns>
-        public static Queue<string> ConvertStringToQueueUrls(string urls, UrlSplittingChar splittingChar)
+        public static List<string> ConvertStringToListUrls(string urls, UrlSplittingChar splittingChar)
         {
             urls = urls.Replace(" ", "");
             if (string.IsNullOrEmpty(urls)) throw new Exception("Urls are empty");
@@ -44,7 +28,7 @@ namespace BatchDownloaderUC
             if (!ValidationTests.AreAllUrlsValid(urls, splittingChar, out invalidUrls))
                 throw new Exception("Invalid URLs " + invalidUrls);
 
-            return new Queue<string>(urls.Split(GetUrlSplittingChar(splittingChar)));
+            return urls.Split(GetUrlSplittingChar(splittingChar)).ToList();
         }
 
         public static char GetUrlSplittingChar(UrlSplittingChar splittingChar)
@@ -53,22 +37,32 @@ namespace BatchDownloaderUC
         }
 
 
-        public static long CheckFileSize(string uri)
+        public static bool TryGetFileFullName(string url, string defaultFileName, out string fileFullName)
         {
-            if(!ValidationTests.IsUrlValid(uri))
-                throw new Exception("CheckFileSize threw an invalid url exception");
-
-            HttpWebRequest wrq = (HttpWebRequest)WebRequest.Create(uri);
-            wrq.Method = "HEAD";
-
-            using (var resp = (HttpWebResponse)wrq.GetResponse())
+            if (!ValidationTests.IsUrlValid(url))
+                throw new Exception("GetFileName: Url is not valid");
+            fileFullName = "";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            try
             {
-                if(resp.ContentLength <= 0)
-                    throw new Exception("Invalid size for url: " + uri);
-
-                return resp.ContentLength;
-            } 
+                HttpWebResponse res = (HttpWebResponse)request.GetResponse();
+                using (Stream rstream = res.GetResponseStream())
+                {
+                    fileFullName = res.Headers["Content-Disposition"] != null ?
+                        res.Headers["Content-Disposition"].Replace("attachment; filename=", "").Replace("\"", "") :
+                        res.Headers["Location"] != null ? Path.GetFileName(res.Headers["Location"]) :
+                        Path.GetFileName(url).Contains('?') || Path.GetFileName(url).Contains('=') ?
+                        Path.GetFileName(res.ResponseUri.ToString()) : defaultFileName;
+                }
+                res.Close();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("GetFileName Error: " + e.Message);
+            }
+            return fileFullName != defaultFileName;
         }
+
 
         public static string ConvertSizeToUnit(long size)
         {
