@@ -41,7 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Downloader.cs" />
+    <Compile Include="DownloadSpeed.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Events\DownloadStartedEventArgs.cs" />
     <Compile Include="Events\ProcessCompletedEventArgs.cs" />
     <Compile Include="Events\ProcessErrorEventArgs.cs" />
     <Compile Include="Events\ProcessStartedEventArgs.cs" />

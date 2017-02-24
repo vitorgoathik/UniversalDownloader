@@ -22,10 +22,12 @@ namespace BatchDownloaderUC
         {
             if (!ValidationTests.IsUrlValid(url))
                 throw new Exception("Url is not valid");
-
-            url = url.Replace("/", @"\");
-            int lastSlash = url.LastIndexOf(@"\");
-            return url.Substring(lastSlash, url.Length - lastSlash);
+            string name = System.IO.Path.GetFileName(url);
+            if (name.Contains("?"))
+                name = name.Substring(0, name.IndexOf("?"));
+            if (name == "")
+                return url;
+            return name;
         }
 
         /// <summary>
@@ -68,27 +70,27 @@ namespace BatchDownloaderUC
             } 
         }
 
-        public static Tuple<int,string> ConvertSizeToUnit(long size)
+        public static string ConvertSizeToUnit(long size)
         {
             if (size <= 0) throw new Exception("ConvertSizeToUnit threw an exception: invalid size number");
-            int newNumber = 0;
+            string newNumber;
             string unit = "";
             if (size >= 1073741824)
             {
-                newNumber = (int)(size / 1073741824);
+                newNumber = ((decimal)size / 1073741824).ToString("0.##");
                 unit = "GB";
             }
             else if (size >= 1048576)
             {
-                newNumber = (int)(size / 1048576);
+                newNumber = ((decimal)size / 1048576).ToString("0.##");
                 unit = "MB";
             }
             else
             {
-                newNumber = (int)(size / 1024);
+                newNumber = ((decimal)size / 1024).ToString("0.##");
                 unit = "KB";
             }
-            return new Tuple<int, string>(newNumber, unit);
+            return newNumber+unit;
         }
 
         public static long GetTotalFreeSpace(string fullPath)
@@ -106,8 +108,7 @@ namespace BatchDownloaderUC
 
         public static string CheckListFileTotalSizeInUnits(List<string> listUrls)
         {
-            Tuple<int, string> size = ConvertSizeToUnit(CheckListFileTotalSize(listUrls));
-            return size.Item1 + size.Item2;
+            return ConvertSizeToUnit(CheckListFileTotalSize(listUrls));
         }
         public static long CheckListFileTotalSize(List<string> listUrls)
         {
@@ -116,5 +117,18 @@ namespace BatchDownloaderUC
             return totalSize;
         }
 
+        public static string GetDownloadsFolder()
+        {
+            try
+            {
+                string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string pathDownload = Path.Combine(pathUser, "Downloads");
+                return pathDownload;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
     }
 }

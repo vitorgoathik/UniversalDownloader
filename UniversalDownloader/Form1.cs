@@ -18,6 +18,9 @@ namespace UniversalDownloader
         {
             InitializeComponent();
             splittingCharComboBox.SelectedIndex = 0;
+            DestinationTextBox.Text = Functions.GetDownloadsFolder();
+            DownloadProgressBar.Maximum = 100;
+            OverallProgressProgressBar.Maximum = 100;
         }
         DownloaderUC downloaderUC;
         bool validate = true;
@@ -31,6 +34,7 @@ namespace UniversalDownloader
                     DestinationTextBox.Text, 5000);
 
                 downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
+                downloaderUC.DownloadStarted += DownloaderUC_DownloadStarted;
                 downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
                 downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
                 downloaderUC.ProcessCompleted += DownloaderUC_ProcessCompleted;
@@ -51,28 +55,45 @@ namespace UniversalDownloader
             }
             else
             {
-                downloaderUC.StartDownloads();
+                downloaderUC.StartDownloading();
             }
         }
 
+        int numberFilesToDownload = 0;
         private void DownloaderUC_ProcessStarted(object sender, BatchDownloaderUC.Events.ProcessStartedEventArgs e)
         {
+            numberFilesToDownload = e.numberOfFiles;
         }
 
+        private void DownloaderUC_DownloadStarted(object sender, BatchDownloaderUC.Events.DownloadStartedEventArgs e)
+        {
+            fileNameLabel.Text = e.fileName;
+        }
         private void DownloaderUC_ProgressChanged(object sender, Events.ProgressChangedEventArgs e)
         {
+            DownloadProgressBar.Value = e.progressPercentage;
+            ProgressLabel.Text = e.progressPercentage + "%";
+            DownloadSpeedLabel.Text = e.speed.ToString() + "/s";
         }
 
         private void DownloaderUC_OverallProgressChanged(object sender, Events.OverallProgressChangedEventArgs e)
         {
+            int percentage = ((int)Math.Round((double)(100 / numberFilesToDownload)) * (numberFilesToDownload - (e.RemainingFiles.Count+1)));
+            OverallProgressProgressBar.Value = percentage;
+            OverallProgressPercentLabel.Text = percentage + "%";
         }
 
         private void DownloaderUC_ProcessCompleted(object sender, BatchDownloaderUC.Events.ProcessCompletedEventArgs e)
         {
+            DownloadProgressBar.Value = 100;
+            ProgressLabel.Text = "100%";
+            OverallProgressProgressBar.Value = 100;
+            OverallProgressPercentLabel.Text = "100%";
         }
         
         private void DownloaderUC_ProcessError(object sender, BatchDownloaderUC.Events.ProcessErrorEventArgs e)
         {
+            
         }
 
         private void SaveAsButton_Click(object sender, EventArgs e)

@@ -8,15 +8,17 @@ namespace UniversalDownloader.Events
 {
     public class ProgressChangedEventArgs
     {
-        public readonly long bytesReceived;
+        public readonly string bytesReceived;
         public readonly int progressPercentage;
-        public readonly long totalBytesToReceive;
+        public readonly string fileSize;
+        public readonly string speed;
 
-        public ProgressChangedEventArgs(int progressPercentage, long bytesReceived, long totalBytesToReceive)
+        public ProgressChangedEventArgs(int progressPercentage, string bytesReceived, string size, string speed)
         {
             this.progressPercentage = progressPercentage;
             this.bytesReceived = bytesReceived;
-            this.totalBytesToReceive = totalBytesToReceive;
-        } 
+            this.fileSize = size;
+            this.speed = speed;
+        }
     }
 }

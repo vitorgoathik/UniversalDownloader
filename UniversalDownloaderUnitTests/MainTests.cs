@@ -11,34 +11,56 @@ namespace UniversalDownloaderUnitTests
     public class MainTests
     {
         Enums.UrlSplittingChar splittingChar = Enums.UrlSplittingChar.Semicolon;
-        string urls = "http://c.tadst.com/gfx/600w/doomsday-rule.jpg?1";
+        string urls = "http://c.tadst.com/gfx/600w/doomsday-rule.jpg?1;https://go.microsoft.com/fwlink/?LinkID=840946";
         string destination = "C:/Program Files";
         int timeout = 1000;
         [Test]
         public void UriFormatTests()
         {
-
-            //empty check
-            Assert.That(string.IsNullOrEmpty(urls), Is.False, "Urls cannot be empty");
+             
             //format check
             string invalidUrls = "";
-            Assert.That(ValidationTests.AreAllUrlsValid(urls, splittingChar, out invalidUrls), Is.True, "error processing urls");
+            Assert.That(ValidationTests.AreAllUrlsValid(urls, splittingChar, out invalidUrls), Is.True, "AreAllUrlsValid should have been valid");
+            Assert.That(ValidationTests.AreAllUrlsValid("", splittingChar, out invalidUrls), Is.False, "AreAllUrlsValid should have been invalid");
+            Assert.That(ValidationTests.AreAllUrlsValid("www.wrongformat,com", splittingChar, out invalidUrls), Is.False, "AreAllUrlsValid should have been invalid");
+            Assert.That(ValidationTests.AreAllUrlsValid("www.sampleurl.com,www.anothersample.com,", splittingChar, out invalidUrls), Is.False, "AreAllUrlsValid should have been invalid");
             Assert.AreEqual(invalidUrls, "", "Uri's in the wrong format: " + invalidUrls);
-            Queue<string> urlsQueue = Functions.ConvertStringToQueueUrls(urls, splittingChar);
-            Assert.Greater(urlsQueue.Count, 0, "Url queue is empty");
+            Assert.Greater(Functions.ConvertStringToQueueUrls(urls, splittingChar).Count,0);
+            
+            Assert.Throws(typeof(Exception),
+                delegate 
+                {
+                    Queue<string> urlsQueueFail = Functions.ConvertStringToQueueUrls("www.wrongformat,com", splittingChar);
+
+                });
+            Assert.AreEqual(Functions.GetUrlSplittingChar(Enums.UrlSplittingChar.Comma),',', "GetUrlSplittingChar not equal ,");
+            Assert.AreNotEqual(Functions.GetUrlSplittingChar(Enums.UrlSplittingChar.Comma), ';', "GetUrlSplittingChar equal ;");
         }
 
         [Test]
         public void DestinationTests()
         {
-            //empty folder path
-            Assert.That(string.IsNullOrEmpty(destination), Is.False, "Files destination cannot be empty");
-            //format check
-            Assert.AreEqual(ValidationTests.IsDestinationValid(destination), true);
-            Assert.Greater(Functions.GetTotalFreeSpace(destination), 0, "Error returning driver space");
 
+            Assert.DoesNotThrow(
+                delegate
+                {
 
+                    Assert.AreEqual(ValidationTests.IsDestinationValid(destination), true);
+                    Assert.AreNotEqual(ValidationTests.IsDestinationValid("/Program Files"), false);
+                    Assert.Greater(Functions.GetTotalFreeSpace(destination), 0, "Error returning driver space");
+                    List<string> urlsList = Functions.ConvertStringToQueueUrls(urls, splittingChar).ToList();
+                    long size = Functions.CheckListFileTotalSize(urlsList);
+                    Assert.Greater(size, 0, "Error CheckListFileTotalSize");
+                    Assert.Equals(Functions.ConvertSizeToUnit(size).Contains("MB"),true);
+                    string downloads = Functions.GetDownloadsFolder();
+                });
+            Assert.Throws(typeof(Exception),
+                delegate
+                {
+                    Functions.CheckListFileTotalSize(new List<string>() { "www.google.com" });
 
+                });
+            
         }
 
         [Test]

@@ -22,7 +22,6 @@ namespace BatchDownloaderUC
         private readonly string _destination; 
         private readonly int _timeoutInMilliSecPerDownload;
         private bool _result = false;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(0);
 
         #endregion
 
@@ -30,6 +29,8 @@ namespace BatchDownloaderUC
 
         public delegate void ProcessStartedEventHandler(object sender, ProcessStartedEventArgs e);
         public event ProcessStartedEventHandler ProcessStarted;
+        public delegate void DownloadStartedEventHandler(object sender, DownloadStartedEventArgs e);
+        public event DownloadStartedEventHandler DownloadStarted;
         public delegate void ProgressChangedEventHandler(object sender, UniversalDownloader.Events.ProgressChangedEventArgs e);
         public event ProgressChangedEventHandler ProgressChanged;
         public delegate void ProcessCompletedEventHandler(object sender, ProcessCompletedEventArgs e);
@@ -44,6 +45,11 @@ namespace BatchDownloaderUC
         {
             if (ProcessStarted != null)
                 ProcessStarted(this, e);
+        }
+        protected virtual void OnDownloadStarted(DownloadStartedEventArgs e)
+        {
+            if (DownloadStarted != null)
+                DownloadStarted(this, e);
         }
         protected virtual void OnProgressChanged(UniversalDownloader.Events.ProgressChangedEventArgs e)
         {
@@ -88,7 +94,14 @@ namespace BatchDownloaderUC
             return Functions.CheckListFileTotalSizeInUnits(_listUrls);
         }
 
-        public bool StartDownloads()
+        public void StartDownloading()
+        {
+            OnProcessStarted(new ProcessStartedEventArgs(_urls.Count));
+            StartNextDownload();
+            
+        }
+        DownloadSpeed speed;
+        private void StartNextDownload()
         {
             string nextUri = _urls.Dequeue();
             try
@@ -97,30 +110,36 @@ namespace BatchDownloaderUC
                 
                 using (WebClient client = new WebClient())
                 {
+                    speed = new DownloadSpeed(client);
+                    speed.Start();
                     var ur = new Uri(nextUri);
                     // client.Credentials = new NetworkCredential("username", "password");
                     client.DownloadProgressChanged += WebClientDownloadProgressChanged;
                     client.DownloadFileCompleted += WebClientDownloadCompleted;
-                    OnProcessStarted(new ProcessStartedEventArgs(nextUri));
-                    client.DownloadFileAsync(ur, _destination);
-                    _semaphore.Wait(_timeoutInMilliSecPerDownload);
-                    return _result && File.Exists(_destination);
+                    string file = Functions.GetFileName(nextUri);
+                    string fullPath = _destination + "/" + file; 
+                    OnDownloadStarted(new DownloadStartedEventArgs(file, Functions.ConvertSizeToUnit(Functions.CheckFileSize(nextUri))));
+                    client.DownloadFileAsync(ur, fullPath);
                 }
             }
             catch (Exception e)
             {
                 OnProcessError(new ProcessErrorEventArgs("Was not able to download file!", e, nextUri));
-                return false;
             }
             finally
             {
-                this._semaphore.Dispose();
+                OnOverallProgressChanged (new OverallProgressChangedEventArgs(_urls.ToList()));
             }
         }
         
         private void WebClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            OnProgressChanged(new UniversalDownloader.Events.ProgressChangedEventArgs(e.ProgressPercentage,e.BytesReceived,e.TotalBytesToReceive));
+            
+            OnProgressChanged(new UniversalDownloader.Events.ProgressChangedEventArgs(
+                e.ProgressPercentage, 
+                Functions.ConvertSizeToUnit(e.BytesReceived), 
+                Functions.ConvertSizeToUnit(e.TotalBytesToReceive + e.BytesReceived),
+                speed.Speed > 0 ? Functions.ConvertSizeToUnit((long)Math.Round(speed.Speed)) : ""));
         }
 
         private void WebClientDownloadCompleted(object sender, AsyncCompletedEventArgs args)
@@ -130,9 +149,13 @@ namespace BatchDownloaderUC
             {
                 OnProcessError(new ProcessErrorEventArgs("error"));
             }
-            
-            if(_urls.Count == 0)
-                _semaphore.Release();
+            if (_urls.Count > 0)
+                StartNextDownload();
+            else
+            {
+                speed.Stop();
+                OnProcessCompleted(new ProcessCompletedEventArgs());
+            }
         }
 
     }

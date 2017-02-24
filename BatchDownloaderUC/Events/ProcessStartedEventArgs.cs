@@ -8,11 +8,11 @@ namespace BatchDownloaderUC.Events
 {
     public class ProcessStartedEventArgs
     {
-        public readonly string fileName;
+        public readonly int numberOfFiles;
 
-        public ProcessStartedEventArgs(string fileName)
+        public ProcessStartedEventArgs(int numberOfFiles)
         {
-            this.fileName = fileName;
+            this.numberOfFiles = numberOfFiles;
         }
     }
 }

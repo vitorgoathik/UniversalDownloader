@@ -51,6 +51,7 @@
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.EnterUrlLabel = new System.Windows.Forms.Label();
             this.BackButton = new System.Windows.Forms.Button();
+            this.fileNameLabel = new System.Windows.Forms.Label();
             this.downloadPanel.SuspendLayout();
             this.fieldsPanel.SuspendLayout();
             this.SuspendLayout();
@@ -78,6 +79,7 @@
             // 
             // downloadPanel
             // 
+            this.downloadPanel.Controls.Add(this.fileNameLabel);
             this.downloadPanel.Controls.Add(this.OverallProgressLabel);
             this.downloadPanel.Controls.Add(this.OverallProgressPercentLabel);
             this.downloadPanel.Controls.Add(this.OverallProgressProgressBar);
@@ -285,6 +287,15 @@
             this.BackButton.Visible = false;
             this.BackButton.Click += new System.EventHandler(this.BackButton_Click);
             // 
+            // fileNameLabel
+            // 
+            this.fileNameLabel.AutoSize = true;
+            this.fileNameLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.fileNameLabel.Location = new System.Drawing.Point(165, 5);
+            this.fileNameLabel.Name = "fileNameLabel";
+            this.fileNameLabel.Size = new System.Drawing.Size(0, 19);
+            this.fileNameLabel.TabIndex = 25;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -331,6 +342,7 @@
         private System.Windows.Forms.TextBox urlTextBox;
         private System.Windows.Forms.Label EnterUrlLabel;
         private System.Windows.Forms.Button BackButton;
+        private System.Windows.Forms.Label fileNameLabel;
     }
 }
 
