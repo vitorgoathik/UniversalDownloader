@@ -1,15 +1,21 @@
 ﻿
 namespace BatchDownloaderUC.Models
 {
-    public class FileInfo
+    public class FileInfo : Uri
     {
-        public readonly string FileFullName;
-        public readonly long SizeBytes;
-        public FileInfo(string fileFullName, long sizeBytes)
+        public string FileFullName { get; protected set; }
+        public long SizeBytes { get; protected set; }
+        public string SizeInUnit => SizeBytes > 0 ? Functions.ConvertSizeToUnit(SizeBytes) : "";
+
+        internal FileInfo(FileInfo fileInfo) : this(fileInfo.Url, fileInfo.FileFullName, fileInfo.SizeBytes) { }
+        internal FileInfo(string url, string fileFullName, long sizeBytes) : base(url)
         {
             this.FileFullName = fileFullName;
             this.SizeBytes = sizeBytes;
         }
 
+        protected FileInfo(string url) : base(url)
+        {
+        }
     }
 }

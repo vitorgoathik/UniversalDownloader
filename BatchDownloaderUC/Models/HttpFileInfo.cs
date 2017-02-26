@@ -5,25 +5,19 @@ using System.Net;
 
 namespace BatchDownloaderUC.Models
 {
-    public class HttpFileInfo
+    public class HttpFileInfo : FileInfo
     {
-        public readonly string Url;
-        public readonly FileInfo FileInfo;
-        public HttpFileInfo(string url) : this(url, DateTime.Now.ToString("HHmmss")) { }
-        public HttpFileInfo(string url, string defaultFileName)
-        {
-            this.Url = url;
-            this.FileInfo = GetFileInfo(url, defaultFileName);
-        }
-        private FileInfo GetFileInfo(string httpUrl, string defaultFileName)
+        internal HttpFileInfo(string url) : this(url, System.IO.Path.GetFileName(new System.Uri(url).AbsolutePath)) { }
+        private HttpFileInfo(string url, string defaultFileName) : base(GetFileInfo(url, defaultFileName)) { }
+        private static FileInfo GetFileInfo(string url, string defaultFileName)
         {
             long sizeBytes;
             string fileFullName;
-            GetHttpHeaderInfo(httpUrl, defaultFileName, out fileFullName, out sizeBytes);
-            return new FileInfo(fileFullName, sizeBytes);
+            GetHttpHeaderInfo(url, defaultFileName, out fileFullName, out sizeBytes);
+            return new FileInfo(url, fileFullName, sizeBytes);
         }
         
-        private bool GetHttpHeaderInfo(string url, string defaultFileName, out string fileFullName, out long fileSize)
+        private static bool GetHttpHeaderInfo(string url, string defaultFileName, out string fileFullName, out long fileSize)
         {
             if (!ValidationTests.IsUrlValid(url))
                 throw new Exception("GetFileName: Url is not valid");

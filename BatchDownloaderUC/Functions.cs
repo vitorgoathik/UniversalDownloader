@@ -6,63 +6,11 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using UniversalDownloader;
-using static BatchDownloaderUC.Enums;
 
 namespace BatchDownloaderUC
 {
-    public static class Functions
-    {
-
-        /// <summary>
-        /// Convert a concateneted String of URLs to a List
-        /// </summary>
-        /// <param name="urls"></param>
-        /// <param name="splittingChar"></param>
-        /// <returns></returns>
-        public static List<string> ConvertStringToListUrls(string urls, UrlSplittingChar splittingChar)
-        {
-            urls = urls.Replace(" ", "");
-            if (string.IsNullOrEmpty(urls)) throw new Exception("Urls are empty");
-            string invalidUrls = "";
-            if (!ValidationTests.AreAllUrlsValid(urls, splittingChar, out invalidUrls))
-                throw new Exception("Invalid URLs " + invalidUrls);
-
-            return urls.Split(GetUrlSplittingChar(splittingChar)).ToList();
-        }
-
-        public static char GetUrlSplittingChar(UrlSplittingChar splittingChar)
-        {
-            return splittingChar == UrlSplittingChar.Semicolon ? ';' : ',';
-        }
-
-
-        public static bool TryGetFileFullName(string url, string defaultFileName, out string fileFullName)
-        {
-            if (!ValidationTests.IsUrlValid(url))
-                throw new Exception("GetFileName: Url is not valid");
-            fileFullName = "";
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            try
-            {
-                HttpWebResponse res = (HttpWebResponse)request.GetResponse();
-                using (Stream rstream = res.GetResponseStream())
-                {
-                    fileFullName = res.Headers["Content-Disposition"] != null ?
-                        res.Headers["Content-Disposition"].Replace("attachment; filename=", "").Replace("\"", "") :
-                        res.Headers["Location"] != null ? Path.GetFileName(res.Headers["Location"]) :
-                        Path.GetFileName(url).Contains('?') || Path.GetFileName(url).Contains('=') ?
-                        Path.GetFileName(res.ResponseUri.ToString()) : defaultFileName;
-                }
-                res.Close();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("GetFileName Error: " + e.Message);
-            }
-            return fileFullName != defaultFileName;
-        }
-
+    internal static class Functions
+    {       
 
         public static string ConvertSizeToUnit(long size)
         {
@@ -87,42 +35,42 @@ namespace BatchDownloaderUC
             return newNumber+unit;
         }
 
-        public static long GetTotalFreeSpace(string fullPath)
+        public static string FormatTimeToString(double totalSeconds)
         {
-            string driveName = Path.GetPathRoot(fullPath);
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            if (totalSeconds < 0) throw new Exception("ConvertTimeToString threw an exception: invalid amounbt of seconds");
+            TimeSpan time = TimeSpan.FromSeconds(totalSeconds);
+            string timeStr = "";
+            if (time.Days > 0)
             {
-                if (drive.IsReady && drive.Name == driveName)
+                timeStr += time.Days + (time.Days > 1 ? " days " : " day ");
+                if (time.Hours > 0)
+                    timeStr += time.Hours + (time.Hours > 1 ? " hours " : " hour ");
+            }
+            else
+            {
+                if (time.Hours > 0)
                 {
-                    return drive.TotalFreeSpace;
+                    timeStr += time.Hours + (time.Hours > 1 ? " hours " : " hour ");
+                    if (time.Minutes > 0)
+                        timeStr += time.Minutes + (time.Minutes > 1 ? " minutes " : " minute ");
+                }
+                else
+                {
+                    if (time.Minutes > 0)
+                    {
+                        timeStr += time.Minutes + (time.Minutes > 1 ? " minute " : " minute ");
+                        if (time.Seconds > 0)
+                            timeStr += time.Seconds + (time.Seconds > 1 ? " seconds " : " second ");
+                    }
+                    else
+                        if (time.Seconds > 0)
+                            timeStr += time.Seconds + (time.Seconds > 1 ? " seconds " : " second ");
                 }
             }
-            return -1;
+            return timeStr;
         }
 
-        public static string CheckListFileTotalSizeInUnits(List<string> listUrls)
-        {
-            return ConvertSizeToUnit(CheckListFileTotalSize(listUrls));
-        }
-        public static long CheckListFileTotalSize(List<string> listUrls)
-        {
-            long totalSize = 0;
-            listUrls.ForEach(o => totalSize += CheckFileSize(o));
-            return totalSize;
-        }
 
-        public static string GetDownloadsFolder()
-        {
-            try
-            {
-                string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string pathDownload = Path.Combine(pathUser, "Downloads");
-                return pathDownload;
-            }
-            catch(Exception e)
-            {
-                throw e;
-            }
-        }
+
     }
 }

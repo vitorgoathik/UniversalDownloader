@@ -8,22 +8,25 @@ namespace BatchDownloaderUC
 {
     public class Enums
     {
-        public enum UrlSplittingChar
-        {
-            Semicolon,
-            Comma
-        }
         public enum Protocol
         {
             Http,
             Ftp,
             Sftp
         }
+        public enum ErrorType
+        {
+            NotLoggedIn
+        }
         public enum DownloadState
         {
             Started,
             Completed,
-            Pending
+            Pending,
+            Error,
+            Closed,
+            Canceled,
+            Deleted,
         }
     }
 }

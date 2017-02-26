@@ -1,65 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BatchDownloaderUC.Models
 {
-    internal class FtpInfo : Uri
+    internal class FtpInfo : FileInfo
     {
 
-        public readonly bool IsDirectory;
-        public readonly string Directory;
-        public readonly FileInfo File;
-        public FtpInfo(string url) : base(url)
+        internal readonly List<FtpInfo> ChildrenPaths = new List<FtpInfo>();
+        internal readonly NetworkCredential Credential;
+        internal readonly string FtpFolder;
+        internal readonly bool IsDirectory;
+
+        internal FtpInfo(string url, NetworkCredential credential) : base(url)
         {
-            FtpInfo ftp = GetFtpInfo(url);
-            Directory = ftp.Directory;
-            IsDirectory = ftp.IsDirectory;
-            File = ftp.File;
+            Credential = credential;
+            ChildrenPaths = GetFtpInfo(ChildrenPaths, url, credential, url);
+            FileFullName = "Ftp_Root_" + url;
+            FtpFolder = "";
+            SizeBytes = 0;
+            IsDirectory = true;
         }
-        private FtpInfo(bool isDirectory, string directory, FileInfo file, string url) : base(url)
+        private FtpInfo(FileInfo fileInfo, bool isDirectory, string ftpFolder, NetworkCredential credential, string rootUrl) : base(fileInfo)
         {
+            Credential = credential;
             IsDirectory = isDirectory;
-            Directory = directory;
-            File = file;
+            FtpFolder = ftpFolder;
+            ChildrenPaths = GetFtpInfo(ChildrenPaths, fileInfo.Url, credential, rootUrl);
         }
 
-        private FtpInfo GetFtpInfo(string url)
+
+        private List<FtpInfo> GetFtpInfo(List<FtpInfo> children, string url, NetworkCredential credentials, string rootUrl)
         {
-            string regex =
-                    @"^" +                          //# Start of line
-                    @"(?<dir>[\-ld])" +             //# File size          
-                    @"(?<permission>[\-rwx]{9})" +  //# Whitespace          \n
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<filecode>\d+)" +
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<owner>\w+)" +
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<group>\w+)" +
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<size>\d+)" +
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<month>\w{3})" +            //# Month (3 letters)   \n
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<day>\d{1,2})" +            //# Day (1 or 2 digits) \n
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<timeyear>[\d:]{4,5})" +    //# Time or year        \n
-                    @"\s+" +                        //# Whitespace          \n
-                    @"(?<filename>(.*))" +          //# Filename            \n
-                    @"$";                           //# End of line
+            List<string> lines = ReadFtpDirectoryLines(url, credentials);
+
+            if (!url.EndsWith("/"))
+                url += "/";
+            if (!rootUrl.EndsWith("/"))
+                rootUrl += "/";
 
 
-            var split = new Regex(regex).Match(url);
-            string dir = split.Groups["dir"].ToString();
-            string filename = split.Groups["filename"].ToString();
-            long size;
-            if (!long.TryParse(split.Groups["size"].ToString(), out size))
-                throw new Exception("Could not parse " + split.Groups["size"] + " to long");
-            bool isDirectory = !string.IsNullOrWhiteSpace(dir) && dir.Equals("d", StringComparison.OrdinalIgnoreCase);
-            return new FtpInfo(IsDirectory,dir,IsDirectory ? new FileInfo(filename,size) : null, url)
+            foreach (string line in lines)
+            {
+                string[] tokens = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string dirOrSize = tokens[2];
+
+                string name = line.Replace(tokens[0], "").Replace(tokens[1], "").Replace(tokens[2], "").Trim().Replace(" ", "%20");
+
+                string fileUrl = url + name;
+                string ftpFolder = url.Replace(rootUrl, "").Replace("%20", " "); ;
+
+                if (dirOrSize == "<DIR>")
+                    children.Add(new FtpInfo(new FileInfo(fileUrl, fileUrl.Replace(rootUrl,""),0),true, "", credentials, rootUrl));
+                else
+                    if (!url.EndsWith(name+"/"))
+                        children.Add(new FtpInfo(new FileInfo(fileUrl, name, long.Parse(dirOrSize)), false, ftpFolder, credentials, rootUrl));
+                
+            }
+            return children;
         }
+
+        private List<string> ReadFtpDirectoryLines(string url, NetworkCredential credentials)
+        {
+            FtpWebRequest listRequest = (FtpWebRequest)WebRequest.Create(url);
+            listRequest.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
+            listRequest.Credentials = credentials;
+
+            List<string> lines = new List<string>();
+
+            using (FtpWebResponse listResponse = (FtpWebResponse)listRequest.GetResponse())
+            using (Stream listStream = listResponse.GetResponseStream())
+            using (StreamReader listReader = new StreamReader(listStream))
+            {
+                while (!listReader.EndOfStream)
+                {
+                    lines.Add(listReader.ReadLine());
+                }
+            }
+            return lines;
+        }
+        
     }
 }

@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Renci.SshNet, Version=2016.1.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\UniversalDownloader\bin\Debug\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,30 +44,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\DownloadErrorEventArgs.cs" />
+    <Compile Include="Events\DownloaderEventArgs.cs" />
+    <Compile Include="Models\Destination.cs" />
     <Compile Include="Models\Download.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="DownloadSpeed.cs" />
     <Compile Include="Models\DownloadingProcess.cs" />
     <Compile Include="Models\FileInfo.cs" />
     <Compile Include="Models\FtpInfo.cs" />
-    <Compile Include="Models\FtpDirectoryInfo.cs" />
     <Compile Include="Models\HttpFileInfo.cs" />
     <Compile Include="Models\Uri.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="Events\DownloadStartedEventArgs.cs" />
-    <Compile Include="Events\ProcessCompletedEventArgs.cs" />
-    <Compile Include="Events\ProcessErrorEventArgs.cs" />
-    <Compile Include="Events\ProcessStartedEventArgs.cs" />
-    <Compile Include="Events\ProgressChangedEventArgs.cs" />
-    <Compile Include="Events\OverallProgressChangedEventArgs.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="IDownloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValidationTests.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Functions\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

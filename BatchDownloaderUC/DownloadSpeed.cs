@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BatchDownloaderUC
 {
-    public class DownloadSpeed
+    internal class DownloadSpeed
     {
         private Stopwatch watch;
         private long NumCounts = 0;
@@ -17,11 +17,14 @@ namespace BatchDownloaderUC
 
         private long CurrentBytesReceived = 0;
 
-        public double Speed { get; private set; }
+        internal double Speed { get; set; }
+        internal string SpeedInUnit => Speed > 0 ? Functions.ConvertSizeToUnit((long)Math.Round(Speed)) : "0";
 
-        private System.Timers.Timer ticker = new System.Timers.Timer(100);
+        internal double ElapsedTimeInSeconds { get; set; }
 
-        public DownloadSpeed(WebClient webClient, int maxPoints = 5)
+        private System.Timers.Timer ticker = new System.Timers.Timer(1000);
+
+        internal DownloadSpeed(WebClient webClient, int maxPoints = 5)
         {
             watch = new System.Diagnostics.Stopwatch();
 
@@ -44,26 +47,29 @@ namespace BatchDownloaderUC
                 DataPoints[NumCounts++ % maxPoints] = dataPoint;
                 Speed = DataPoints.Average()*1024;
                 CurrentBytesReceived = 0;
+                ElapsedTimeInSeconds += 1;
                 watch.Restart();
             };
         }
 
-        public void Stop()
+        internal void Stop()
         {
+            ElapsedTimeInSeconds = 0;
             watch.Stop();
             ticker.Stop();
         }
 
-        public void Start()
+        internal void Start()
         {
             watch.Start();
             ticker.Start();
         }
 
-        public void Reset()
+        internal void Reset()
         {
             CurrentBytesReceived = 0;
             PrevBytes = 0;
+            ElapsedTimeInSeconds = 0;
             watch.Restart();
             ticker.Start();
         }

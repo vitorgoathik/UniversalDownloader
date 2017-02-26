@@ -1,4 +1,6 @@
 ﻿using BatchDownloaderUC;
+using BatchDownloaderUC.Events;
+using BatchDownloaderUC.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,83 +19,110 @@ namespace UniversalDownloader
         public Form1()
         {
             InitializeComponent();
-            splittingCharComboBox.SelectedIndex = 0;
             DestinationTextBox.Text = Functions.GetDownloadsFolder();
             DownloadProgressBar.Maximum = 100;
             OverallProgressProgressBar.Maximum = 100;
+            downloaderUC = DownloaderUC.GetInstance();
+            downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
+            downloaderUC.DownloadStarted += DownloaderUC_DownloadStarted;
+            downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
+            downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
+            downloaderUC.DownloadingProcessCompleted += DownloaderUC_DownloadingProcessCompleted;
+            downloaderUC.ProcessError += DownloaderUC_ProcessError;
+            downloaderUC.DownloadCanceled += DownloaderUC_DownloadCanceled;
         }
         DownloaderUC downloaderUC;
-        bool validate = true;
+        private string estimatedTimeTotal;
+        private string estimatedTimeCurrentDownload;
+
         private void DownloadButton_Click(object sender, EventArgs e)
         {
-            if(validate)
             try
             {
-                 downloaderUC = new DownloaderUC(urlTextBox.Text,
-                    splittingCharComboBox.SelectedText == "," ? Enums.UrlSplittingChar.Comma : Enums.UrlSplittingChar.Semicolon,
-                    DestinationTextBox.Text, 5000);
-
-                downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
-                downloaderUC.DownloadStarted += DownloaderUC_DownloadStarted;
-                downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
-                downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
-                downloaderUC.ProcessCompleted += DownloaderUC_ProcessCompleted;
-                downloaderUC.ProcessError += DownloaderUC_ProcessError;
-                    
-                validationLabel.ForeColor = Color.DarkGreen;
-                validationLabel.Text = String.Format("Total file size: {0}", downloaderUC.CheckListFileTotalSizeInUnits());
-                    
-                fieldsPanel.Enabled = false;
-                BackButton.Visible = true;
-                DownloadButton.Text = "Download";
-                downloadPanel.Visible = true;
-                    validate = false;
-                }
+                downloaderUC.AddDownload(urlTextBox.Text, DestinationTextBox.Text, UsernameTextBox.Text,passwordTextBox.Text);
+            }
             catch (Exception ex)
             {
+                validationLabel.ForeColor = Color.Red;
                 validationLabel.Text = ex.Message;
             }
-            else
+        }
+
+        private void LoadDataGrid()
+        {
+            List<DownloadDataGridItem> dgList = new List<DownloadDataGridItem>();
+            downloaderUC.DownloadingProcess.DownloadsCollection.ToList().ForEach(o => dgList.Add(new DownloadDataGridItem()
             {
-                downloaderUC.StartDownloading();
-            }
+                FileName = o.FileInfo.FileFullName,
+                FileSize = o.FileInfo.SizeInUnit,
+                DownloadState = o.DownloadState == Enums.DownloadState.Closed ? "Completed" : o.DownloadState.ToString(),
+                ElapsedTime = o.ElapsedTimeInSeconds > 0 ? TimeSpan.FromSeconds(o.ElapsedTimeInSeconds).ToString(@"d\.hh\:mm\:ss") : "",
+                Destination = o.Destination.FullPath,
+                Url = o.FileInfo.Url
+            }));
+
+            downloadsGridView.DataSource = dgList;
         }
 
-        int numberFilesToDownload = 0;
-        private void DownloaderUC_ProcessStarted(object sender, BatchDownloaderUC.Events.ProcessStartedEventArgs e)
+        private void DownloaderUC_ProcessStarted(object sender, DownloaderEventArgs e)
         {
-            numberFilesToDownload = e.numberOfFiles;
+            downloadPanel.Visible = true;
+            LoadDataGrid();
         }
 
-        private void DownloaderUC_DownloadStarted(object sender, BatchDownloaderUC.Events.DownloadStartedEventArgs e)
+        private void DownloaderUC_DownloadStarted(object sender, DownloaderEventArgs e)
         {
-            fileNameLabel.Text = e.fileName;
+            validationLabel.ForeColor = Color.DarkGreen;
+            validationLabel.Text = String.Format("Total file size: {0}", downloaderUC.CurrentDownload.FileInfo.SizeBytes);
+            fileNameLabel.Text = downloaderUC.CurrentDownload.FileInfo.FileFullName;
+            LoadDataGrid();
         }
-        private void DownloaderUC_ProgressChanged(object sender, Events.ProgressChangedEventArgs e)
+        private void DownloaderUC_ProgressChanged(object sender, DownloaderEventArgs e)
         {
-            DownloadProgressBar.Value = e.progressPercentage;
-            ProgressLabel.Text = e.progressPercentage + "%";
-            DownloadSpeedLabel.Text = e.speed.ToString() + "/s";
+            DownloadSpeedLabel.Text = e.SpeedInUnit.ToString() + "/s";
+
+            DownloadProgressBar.Value = downloaderUC.CurrentDownload.PercentCompleted();
+            ProgressLabel.Text = DownloadProgressBar.Value + "%";
+
+            OverallProgressProgressBar.Value = downloaderUC.DownloadingProcess.PercentCompleted();
+            OverallProgressPercentLabel.Text = OverallProgressProgressBar.Value + "%";
+
+            estimatedTimeCurrentDownload = e.EstimatedTimeCurrentDownload;
+            estimatedTimeTotal = e.EstimatedTimeTotal;
         }
 
-        private void DownloaderUC_OverallProgressChanged(object sender, Events.OverallProgressChangedEventArgs e)
+        private void DownloaderUC_OverallProgressChanged(object sender, DownloaderEventArgs e)
         {
-            int percentage = ((int)Math.Round((double)(100 / numberFilesToDownload)) * (numberFilesToDownload - (e.RemainingFiles.Count+1)));
-            OverallProgressProgressBar.Value = percentage;
-            OverallProgressPercentLabel.Text = percentage + "%";
+            LoadDataGrid();
         }
 
-        private void DownloaderUC_ProcessCompleted(object sender, BatchDownloaderUC.Events.ProcessCompletedEventArgs e)
+
+        private void DownloaderUC_DownloadingProcessCompleted(object sender, DownloaderEventArgs e)
         {
             DownloadProgressBar.Value = 100;
             ProgressLabel.Text = "100%";
             OverallProgressProgressBar.Value = 100;
             OverallProgressPercentLabel.Text = "100%";
+            LoadDataGrid();
         }
-        
-        private void DownloaderUC_ProcessError(object sender, BatchDownloaderUC.Events.ProcessErrorEventArgs e)
+        private void DownloaderUC_ProcessError(object sender, DownloadErrorEventArgs e)
         {
-            
+            switch(e.ErrorType)
+            {
+                case Enums.ErrorType.NotLoggedIn:
+                    
+                default:
+                    validationLabel.ForeColor = Color.Red;
+                    validationLabel.Text = e.ErrorMessage;
+                    LoadDataGrid();
+                break;
+            }
+
+        }
+
+        private void DownloaderUC_DownloadCanceled(object sender, DownloaderEventArgs e)
+        {
+            LoadDataGrid();
         }
 
         private void SaveAsButton_Click(object sender, EventArgs e)
@@ -105,15 +134,38 @@ namespace UniversalDownloader
             }
         }
 
-        private void BackButton_Click(object sender, EventArgs e)
+        private void secondTicker_Tick(object sender, EventArgs e)
         {
-            fieldsPanel.Enabled = true;
-            BackButton.Visible = false;
-            DownloadButton.Text = "Validade";
-            downloadPanel.Visible = false;
-            validationLabel.ForeColor = Color.Red;
-            validationLabel.Text = "";
-            validate = true;
+            estimatedTimeLabel.Text = estimatedTimeCurrentDownload;
+            overallEstimatedTime.Text = estimatedTimeTotal;
         }
+        
+
+        private void DeleteSelectedButton_Click(object sender, EventArgs e)
+        {
+            List<int> fileIndexes = new List<int>();
+            if(downloadsGridView.SelectedRows.Count > 0)
+            {
+                foreach(DataGridViewRow row in downloadsGridView.SelectedRows)
+                {
+                    fileIndexes.Add(row.Index);
+                }
+                downloaderUC.CancelDownloads(fileIndexes);
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            downloaderUC?.CancelCurrentDownload();
+        }
+    }
+    public class DownloadDataGridItem
+    {
+        public string FileName { get; set; }
+        public string FileSize { get; set; }
+        public string ElapsedTime { get; set; }
+        public string DownloadState { get; set; }
+        public string Destination { get; set; }
+        public string Url { get; set; }
     }
 }

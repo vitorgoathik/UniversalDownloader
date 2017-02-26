@@ -1,4 +1,6 @@
 ﻿using BatchDownloaderUC.Events;
+using BatchDownloaderUC.Models;
+using Renci.SshNet;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,7 +10,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UniversalDownloader.Events;
 using static BatchDownloaderUC.Enums;
 
 namespace BatchDownloaderUC
@@ -17,146 +18,268 @@ namespace BatchDownloaderUC
     {
         #region private fields 
 
-        private readonly List<string> _listUrls;
-        private readonly Queue<string> _urls;
-        private readonly string _destination; 
-        private readonly int _timeoutInMilliSecPerDownload;
-        private bool _result = false;
+        public DownloadingProcess DownloadingProcess { get; private set; }
+        public Download CurrentDownload { get; private set; }
 
         #endregion
 
         #region EventHandlers
 
-        public delegate void ProcessStartedEventHandler(object sender, ProcessStartedEventArgs e);
+        public delegate void ProcessStartedEventHandler(object sender, DownloaderEventArgs e);
         public event ProcessStartedEventHandler ProcessStarted;
-        public delegate void DownloadStartedEventHandler(object sender, DownloadStartedEventArgs e);
+        public delegate void DownloadStartedEventHandler(object sender, DownloaderEventArgs e);
+
+        private static DownloaderUC downloaderUC;
+        public static DownloaderUC GetInstance()
+        {
+            if (downloaderUC == null)
+                downloaderUC = new DownloaderUC();
+            return downloaderUC;
+        }
+
         public event DownloadStartedEventHandler DownloadStarted;
-        public delegate void ProgressChangedEventHandler(object sender, UniversalDownloader.Events.ProgressChangedEventArgs e);
+        public delegate void ProgressChangedEventHandler(object sender, DownloaderEventArgs e);
         public event ProgressChangedEventHandler ProgressChanged;
-        public delegate void ProcessCompletedEventHandler(object sender, ProcessCompletedEventArgs e);
-        public event ProcessCompletedEventHandler ProcessCompleted;
-        public delegate void OverallProgressChangedEventHandler(object sender, OverallProgressChangedEventArgs e);
+        public delegate void DownloadingProcessCompletedEventHandler(object sender, DownloaderEventArgs e);
+        public event DownloadingProcessCompletedEventHandler DownloadingProcessCompleted;
+        public delegate void OverallProgressChangedEventHandler(object sender, DownloaderEventArgs e);
         public event OverallProgressChangedEventHandler OverallProgressChanged;
-        public delegate void ProcessErrorEventHandler(object sender, ProcessErrorEventArgs e);
+        public delegate void ProcessErrorEventHandler(object sender, DownloadErrorEventArgs e);
         public event ProcessErrorEventHandler ProcessError;
+        public delegate void DownloadCanceledEventHandler(object sender, DownloaderEventArgs e);
+        public event DownloadCanceledEventHandler DownloadCanceled;
 
-
-        protected virtual void OnProcessStarted(ProcessStartedEventArgs e)
+        protected virtual void OnProcessStarted(DownloaderEventArgs e)
         {
-            if (ProcessStarted != null)
-                ProcessStarted(this, e);
+            ProcessStarted?.Invoke(this, e);
         }
-        protected virtual void OnDownloadStarted(DownloadStartedEventArgs e)
+        protected virtual void OnDownloadStarted(DownloaderEventArgs e)
         {
-            if (DownloadStarted != null)
-                DownloadStarted(this, e);
+            DownloadStarted?.Invoke(this, e);
         }
-        protected virtual void OnProgressChanged(UniversalDownloader.Events.ProgressChangedEventArgs e)
+        protected virtual void OnProgressChanged(DownloaderEventArgs e)
         {
-            if (ProgressChanged != null)
-                ProgressChanged(this, e);
+            ProgressChanged?.Invoke(this, e);
         }
-        protected virtual void OnProcessCompleted(ProcessCompletedEventArgs e)
+        protected virtual void OnDownloadingProcessCompleted(DownloaderEventArgs e)
         {
-            if (ProcessCompleted != null)
-                ProcessCompleted(this, e);
+            DownloadingProcessCompleted?.Invoke(this, e);
         }
-        protected virtual void OnOverallProgressChanged(OverallProgressChangedEventArgs e)
+        protected virtual void OnOverallProgressChanged(DownloaderEventArgs e)
         {
-            if (OverallProgressChanged != null)
-                OverallProgressChanged(this, e);
+            OverallProgressChanged?.Invoke(this, e);
         }
-        protected virtual void OnProcessError(ProcessErrorEventArgs e)
+        protected virtual void OnProcessError(DownloadErrorEventArgs e)
         {
-            if (ProcessError != null)
-                ProcessError(this, e);
+            ProcessError?.Invoke(this, e);
+        }
+        protected virtual void OnDownloadCanceled(DownloaderEventArgs e)
+        {
+            DownloadCanceled?.Invoke(this, e);
         }
 
         #endregion
 
-        public DownloaderUC(string urls, UrlSplittingChar splittingChar, string destination, int timeoutInMilliSecPerDownload)
+        public void AddDownload(string url, string destination)
         {
-            if (urls.Count() == 0) throw new Exception("Urls are empty");
-            if (string.IsNullOrEmpty(destination)) throw new ArgumentNullException("destination");
-            this._urls = Functions.ConvertStringToQueueUrls(urls, splittingChar);
-            if (!ValidationTests.IsDestinationValid(destination)) throw new Exception("Invalid destination path");
-
-            this._listUrls = _urls.ToList();
-
-            if (!ValidationTests.IsDriverSpaceSufficient(destination, _listUrls)) throw new Exception("Insufficient memory disk space");
-
-            this._destination = destination;
-            this._timeoutInMilliSecPerDownload = timeoutInMilliSecPerDownload;
+            AddDownload(url, destination, "", "");
         }
-
-        public string CheckListFileTotalSizeInUnits()
+        public void AddDownload(string url, string destination, string username, string password)
         {
-            return Functions.CheckListFileTotalSizeInUnits(_listUrls);
-        }
-
-        public void StartDownloading()
-        {
-            OnProcessStarted(new ProcessStartedEventArgs(_urls.Count));
-            StartNextDownload();
-            
-        }
-        DownloadSpeed speed;
-        private void StartNextDownload()
-        {
-            string nextUri = _urls.Dequeue();
+            if (DownloadingProcess == null)
+                DownloadingProcess = new DownloadingProcess();
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_destination));
+                DownloadingProcess.AddDownloadToList(url, destination, username, password);
+                StartDownloading();
+            }
+            catch(Exception ex)
+            {
+                if (ex.Message.Contains("Not logged in."))
+                    OnProcessError(new DownloadErrorEventArgs("Not logged in.", ErrorType.NotLoggedIn, ex));
+                else
+                    OnProcessError(new DownloadErrorEventArgs("Error on AddDownload", ex));
+            }
+        }
+        private void StartDownloading()
+        {
+            if (DownloadingProcess.StartedDownload != null)
+                return;
+            else
+            {
+                if (DownloadingProcess.NextDownload == null)
+                {
+                    speed?.Stop();
+                    DownloadingProcess.ClearDownloads();
+                    OnDownloadingProcessCompleted(new DownloaderEventArgs());
+                    return;
+                }
+            }
+
+            CurrentDownload = DownloadingProcess.NextDownload;
+
+            DownloadingProcess.NextDownload.ChangeState(DownloadState.Started);
+
+            OnProcessStarted(new DownloaderEventArgs());
+
+            switch (CurrentDownload.Uri.Protocol)
+            {
+                case Protocol.Http:
+                    StartNextDownloadHTTP();
+                    break;
+                case Protocol.Ftp:
+                    StartNextDownloadFtp();
+                    break;
+            }
+        }
+
+
+        public void CancelCurrentDownload()
+        {
+            client?.CancelAsync();
+        }
+
+        public void CancelDownloads(List<int> fileIndexes)
+        {
+            if (DownloadingProcess.CancelDownloads(fileIndexes))
+                client.CancelAsync();
+            else
+                OnDownloadCanceled(new DownloaderEventArgs());
+        }
+        DownloadSpeed speed; 
+
+        #region StartNextDownloadHTTP
+        WebClient client;
+
+        private void StartNextDownloadHTTP()
+        {
+            try
+            {
+                Directory.CreateDirectory(CurrentDownload.Destination.FullPath) ;
                 
-                using (WebClient client = new WebClient())
+                using (client = new WebClient())
                 {
                     speed = new DownloadSpeed(client);
                     speed.Start();
-                    var ur = new Uri(nextUri);
                     // client.Credentials = new NetworkCredential("username", "password");
                     client.DownloadProgressChanged += WebClientDownloadProgressChanged;
                     client.DownloadFileCompleted += WebClientDownloadCompleted;
-                    string file = Functions.GetFileName(nextUri);
-                    string fullPath = _destination + "/" + file; 
-                    OnDownloadStarted(new DownloadStartedEventArgs(file, Functions.ConvertSizeToUnit(Functions.CheckFileSize(nextUri))));
-                    client.DownloadFileAsync(ur, fullPath);
+
+                    OnDownloadStarted(new DownloaderEventArgs());
+                    CurrentDownload.Destination.SetFullUniquePathWithFile();
+                    client.DownloadFileAsync(new System.Uri(CurrentDownload.Uri.Url), CurrentDownload.Destination.FullPathWithFile);
                 }
             }
             catch (Exception e)
-            {
-                OnProcessError(new ProcessErrorEventArgs("Was not able to download file!", e, nextUri));
+            { 
+                OnProcessError(new DownloadErrorEventArgs("Was not able to download file (http)!", e));
             }
             finally
             {
-                OnOverallProgressChanged (new OverallProgressChangedEventArgs(_urls.ToList()));
+                OnOverallProgressChanged (new DownloaderEventArgs());
             }
         }
-        
+
+
         private void WebClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            
-            OnProgressChanged(new UniversalDownloader.Events.ProgressChangedEventArgs(
-                e.ProgressPercentage, 
-                Functions.ConvertSizeToUnit(e.BytesReceived), 
-                Functions.ConvertSizeToUnit(e.TotalBytesToReceive + e.BytesReceived),
-                speed.Speed > 0 ? Functions.ConvertSizeToUnit((long)Math.Round(speed.Speed)) : ""));
+            CurrentDownload.BytesReceived = e.BytesReceived;
+            OnProgressChanged(new DownloaderEventArgs(
+                CurrentDownload.GetRemainingTimeString(speed.Speed),
+                DownloadingProcess.GetRemainingTimeString(speed.Speed),
+                speed.SpeedInUnit));
         }
 
         private void WebClientDownloadCompleted(object sender, AsyncCompletedEventArgs args)
         {
-            _result = !args.Cancelled;
-            if (!_result)
+            if (args.Cancelled)
             {
-                OnProcessError(new ProcessErrorEventArgs("error"));
+                CurrentDownload.ChangeState(DownloadState.Canceled);
+                OnDownloadCanceled(new DownloaderEventArgs());
             }
-            if (_urls.Count > 0)
-                StartNextDownload();
             else
+                CurrentDownload.ChangeState(DownloadState.Completed);
+
+            CurrentDownload.ElapsedTimeInSeconds = speed.ElapsedTimeInSeconds;
+            StartDownloading();
+        }
+        #endregion
+
+        #region StartNextDownloadFtp
+        
+
+        private void StartNextDownloadFtp()
+        {
+            try
+            { 
+                bool UseBinary = true; // use true for .zip file or false for a text file
+                bool UsePassive = false;
+
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(CurrentDownload.Uri.Url);
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
+                request.KeepAlive = true;
+                request.UsePassive = UsePassive;
+                request.UseBinary = UseBinary;
+
+                request.Credentials = CurrentDownload.FtpFileInfo.Credential;
+
+                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+
+                Stream responseStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(responseStream);
+                Directory.CreateDirectory(CurrentDownload.Destination.FullPath);
+                using (FileStream writer = new FileStream(CurrentDownload.Destination.FullPathWithFile, FileMode.Create))
+                {
+
+                    long length = response.ContentLength;
+                    int bufferSize = 2048;
+                    int readCount;
+                    byte[] buffer = new byte[2048];
+
+                    readCount = responseStream.Read(buffer, 0, bufferSize);
+                    while (readCount > 0)
+                    {
+                        writer.Write(buffer, 0, readCount);
+                        readCount = responseStream.Read(buffer, 0, bufferSize);
+                    }
+                }
+
+                reader.Close();
+                response.Close();
+            }
+            catch (Exception ex)
             {
-                speed.Stop();
-                OnProcessCompleted(new ProcessCompletedEventArgs());
+                CurrentDownload.ChangeState(DownloadState.Error);
+                OnProcessError(new DownloadErrorEventArgs("Was not able to download file (ftp)!", ex));
+            }
+            CurrentDownload.ChangeState(DownloadState.Completed);
+            StartDownloading();
+        }
+        #endregion
+
+
+        #region StartNextDownloadSftp
+        public void StartNextDownloadSftp()
+        {
+            String Host = "ftp.csidata.com";
+            int Port = 22;
+            String RemoteFileName = "TheDataFile.txt";
+            String LocalDestinationFilename = "TheDataFile.txt";
+            String Username = "yourusername";
+            String Password = "yourpassword";
+
+            using (var sftp = new SftpClient(Host, Port, Username, Password))
+            {
+                sftp.Connect();
+
+                using (var file = File.OpenWrite(LocalDestinationFilename))
+                {
+                    sftp.DownloadFile(RemoteFileName, file);
+                }
+
+                sftp.Disconnect();
             }
         }
-
+        #endregion
     }
 }
