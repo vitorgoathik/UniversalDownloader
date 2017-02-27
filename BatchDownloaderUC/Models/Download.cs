@@ -1,77 +1,46 @@
-﻿using BatchDownloaderUC.Exceptions;
-using BatchDownloaderUC.Models;
+﻿using BatchDownloaderUC.Exceptions; 
 using System;
 using System.Net;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
 
-namespace BatchDownloaderUC
+namespace BatchDownloaderUC.Models
 {
     public class Download
     {
         #region Fields and properties
+        public readonly RemoteFileInfo RemoteFileInfo;
+        public readonly Destination Destination;
 
-        /// <summary>
-        /// Used to calculate indicators such as time remaining, speed and percent done
-        /// </summary>
-        public long BytesReceived { get; internal set; }
 
+         
         /// <summary>
         /// Can be set by this object's ChangeDownloadState method, since there are built in operations handling per state choice
         /// </summary>
         public DownloadState DownloadState { get; private set; }
-
-        public Destination Destination { get; }
         
-        internal readonly Models.Uri Uri;
-        internal readonly object DownloadFile;
+        /// <summary>
+        /// Used to calculate indicators such as time remaining, speed and percent done
+        /// </summary>
+        public long BytesReceived { get; internal set; }
+        
         public string StateMessage { get; private set; }
-
-        public FileInfo FileInfo { get { return (FileInfo)DownloadFile; } }
-        internal HttpFileInfo HttpFileInfo { get { return Uri.Protocol == Protocol.Http ? (HttpFileInfo)DownloadFile : null; } }
-        internal FtpInfo FtpFileInfo { get { return Uri.Protocol == Protocol.Ftp ? (FtpInfo)DownloadFile : null; } }
 
         public double ElapsedTimeInSeconds { get; set; }
 
         #endregion
         #region Constructors
 
-        
-        /// <summary>
-        /// This override should be when there is a need to fix readonly properties such as destination after having prepared the whole FileInfo
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="destination"></param>
-        /// <param name="alreadyPreparedFile"></param>
-        internal Download(string url, string destination, FtpInfo alreadyPreparedFile) : this(url,destination,alreadyPreparedFile,"",""){}
-        /// <summary>
-        /// This is the FTP and sFTP override choice, for it provides username and password
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="destination"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        internal Download(string url, string destination, string username, string password) : this(url, destination, null, username, password) { }
-        
-        private Download(string url, string destination, FtpInfo alreadyPreparedFile, string username, string password) 
+
+        internal Download(Destination destination, RemoteFileInfo remoteFileInfo)
         {
             try
             {
-
-            this.Uri = new Models.Uri(url);
-            switch (Uri.Protocol) 
-            {
-                case Protocol.Http:
-                    DownloadFile = new HttpFileInfo(url, username, password);
-                    break;
-                case Protocol.Ftp:
-                    DownloadFile = alreadyPreparedFile ?? new FtpInfo(url, new System.Net.NetworkCredential(username, password));
-                    break;
+                this.Destination = destination;
+                this.RemoteFileInfo = remoteFileInfo;
+                DownloadState = DownloadState.Pending;
             }
-            this.DownloadState = DownloadState.Pending;
-            this.Destination = new Destination(destination, FileInfo.FileFullName);
-
-            }catch(Exception ex)
+            catch (Exception ex)
             {
                 DownloaderUCException.Throw(ex);
             }
@@ -84,13 +53,12 @@ namespace BatchDownloaderUC
         /// Requires BytesReceived property setted
         /// </summary>
         /// <returns></returns>
-        public int PercentCompleted()
+        public virtual int PercentCompleted()
         {
-            FileInfo file = FileInfo;
             try
             {
                 if (BytesReceived == 0) return 0;
-                var percent = (int)Math.Round((1 - ((double)(file.SizeBytes - BytesReceived) / file.SizeBytes)) * 100);
+                var percent = (int)Math.Round((1 - ((double)(RemoteFileInfo.SizeBytes - BytesReceived) / RemoteFileInfo.SizeBytes)) * 100);
                 return percent;
             }
             catch (Exception e)
@@ -103,7 +71,7 @@ namespace BatchDownloaderUC
         /// Handles the download before setting the new state
         /// </summary>
         /// <param name="state"></param>
-        internal void ChangeState(DownloadState state, bool delete=true, string stateMessage="")
+        internal virtual void ChangeState(DownloadState state, bool delete = true, string stateMessage = "")
         {
             //we don't need those states to change to anything
             if (DownloadState == DownloadState.Error || DownloadState == DownloadState.Canceled)
@@ -115,17 +83,17 @@ namespace BatchDownloaderUC
                     case DownloadState.Error:
                         //deletes partial data on error
                         StateMessage = stateMessage;
-                        if(delete)
-                            System.IO.File.Delete(this.Destination.FullPathWithFile);
-                    break;
+                        if (delete)
+                            System.IO.File.Delete(Destination.FullPath + "/" +  RemoteFileInfo.FileFullName);
+                        break;
                     case DownloadState.Canceled:
                         //deletes partial data on cancel
                         if (DownloadState == DownloadState.Started || DownloadState == DownloadState.Deleted)
-                            System.IO.File.Delete(this.Destination.FullPathWithFile);
-                    break;
+                            System.IO.File.Delete(Destination.FullPath + "/" + RemoteFileInfo.FileFullName);
+                        break;
                     case DownloadState.Deleted:
                         if (DownloadState == DownloadState.Completed) return;
-                    break;
+                        break;
                 }
             }
             catch (System.IO.IOException ex)
@@ -145,12 +113,14 @@ namespace BatchDownloaderUC
         /// </summary>
         /// <param name="speedPerSecond"></param>
         /// <returns></returns>
-        internal string GetRemainingTimeString(double speedPerSecond)
+        public virtual string GetRemainingTimeString(double speedPerSecond)
         {
-            long totalBytesToReceive = FileInfo.SizeBytes - BytesReceived;
+            long totalBytesToReceive = RemoteFileInfo.SizeBytes - BytesReceived;
             if (totalBytesToReceive == 0 || speedPerSecond == 0) return "";
             return Functions.FormatTimeToString((double)totalBytesToReceive / speedPerSecond);
         }
+
+
         #endregion
 
     }

@@ -4,3 +4,5 @@ UniversalDownloader/obj/
 UniversalDownloaderUnitTests/bin/
 UniversalDownloaderUnitTests/obj/
 BatchDownloaderUC/bin/
+CustomProtocolImplementation/obj/
+FTPImplementation/obj/

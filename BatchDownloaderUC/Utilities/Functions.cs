@@ -6,11 +6,30 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Utilities.BatchDownloaderUC.Enums;
 
 namespace Utilities.BatchDownloaderUC
 {
     internal static class Functions
-    {       
+    {
+        /// <summary>
+        /// Gets the protocol from a given Url
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        internal static Protocol GetProtocol(string url)
+        {
+            if (!ValidationTests.IsUrlValid(url))
+                throw new Exception("Uri GetProtocol: Invalid Url");
+            switch (new System.Uri(url).Scheme.ToLower())
+            {
+                case "http":
+                case "https": return Protocol.Http;
+                case "ftp": return Protocol.Ftp;
+                case "sftp": return Protocol.Sftp;
+                default: throw new Exception("Unknown protocol for url " + url);
+            }
+        }
         /// <summary>
         /// User friendly representation of a file size
         /// </summary>
@@ -78,8 +97,6 @@ namespace Utilities.BatchDownloaderUC
             }
             return timeStr;
         }
-
-
 
     }
 }

@@ -25,6 +25,10 @@ namespace BatchDownloaderUC.Exceptions
         internal DownloaderUCException(ErrorType error, string suffix1, string suffix2, Exception exception = null) : this(error, suffix1, suffix2, "", "", exception) { }
         internal DownloaderUCException(ErrorType error, string suffix1, Exception exception = null) : this(error, suffix1, "", "", "", exception) { }
         internal DownloaderUCException(ErrorType error, Exception exception = null) : this(error, "", "", "", "", exception) { }
+        internal DownloaderUCException(string errorMessage) 
+        {
+            ErrorMessage = errorMessage;
+        }
 
 
         /// <summary>

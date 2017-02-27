@@ -10,7 +10,7 @@ namespace Utilities.BatchDownloaderUC
 {
     public static class Enums
     {
-        internal enum Protocol
+        public enum Protocol
         {
             Http,
             Ftp,
@@ -36,6 +36,8 @@ namespace Utilities.BatchDownloaderUC
             GeneralErrorAddingDownload,
             [Description("There was an error when downloading this file: {0}")]
             GeneralErrorOnDownload,
+            [Description("Requested protocol not supported")]
+            ProtocolNotImplemented,
         }
         public enum DownloadState
         {
