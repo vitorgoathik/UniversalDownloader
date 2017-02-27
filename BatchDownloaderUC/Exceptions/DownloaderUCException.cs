@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("UniversalDownloaderUnitTests")]
 namespace BatchDownloaderUC.Exceptions
 {
     internal class DownloaderUCException : Exception

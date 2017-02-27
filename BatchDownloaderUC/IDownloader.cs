@@ -126,7 +126,7 @@ namespace BatchDownloaderUC
         /// This method will return an unique name by adding (increment) to their suffix
         /// </summary>
         /// <returns>ex: File(2).ext, in case there are two more files named "File" in the folder</returns> 
-        protected virtual string GetDistinguishedFileNameForSaving()
+        internal virtual string GetDistinguishedFileNameForSaving()
         {
             //first the file must be separated from its extension
             string ext = Path.GetExtension(CurrentDownload.RemoteFileInfo.FileFullName);

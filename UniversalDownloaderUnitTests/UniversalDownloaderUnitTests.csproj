@@ -54,7 +54,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="DownloaderUCExceptionTests.cs" />
     <Compile Include="MainTests.cs" />
+    <Compile Include="ModelsUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

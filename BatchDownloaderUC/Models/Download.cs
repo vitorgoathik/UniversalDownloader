@@ -34,16 +34,9 @@ namespace BatchDownloaderUC.Models
 
         internal Download(Destination destination, RemoteFileInfo remoteFileInfo)
         {
-            try
-            {
-                this.Destination = destination;
-                this.RemoteFileInfo = remoteFileInfo;
-                DownloadState = DownloadState.Pending;
-            }
-            catch (Exception ex)
-            {
-                DownloaderUCException.Throw(ex);
-            }
+            this.Destination = destination;
+            this.RemoteFileInfo = remoteFileInfo;
+            DownloadState = DownloadState.Pending;
         }
         #endregion
         #region Methods and functions
@@ -63,7 +56,7 @@ namespace BatchDownloaderUC.Models
             }
             catch (Exception e)
             {
-                throw new Exception("PercentCompleted: Error processing SizeBytes and BytesReceived");
+                throw new DownloaderUCException(ErrorType.GeneralErrorOnDownload, RemoteFileInfo.FileFullName);
             }
         }
 
