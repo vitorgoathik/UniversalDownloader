@@ -1,4 +1,6 @@
 ﻿
+using Utilities.BatchDownloaderUC;
+
 namespace BatchDownloaderUC.Models
 {
     public class FileInfo : Uri

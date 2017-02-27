@@ -1,20 +1,29 @@
-﻿using System;
+﻿using BatchDownloaderUC.Exceptions;
+using BatchDownloaderUC.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static BatchDownloaderUC.Enums;
+using Utilities.BatchDownloaderUC;
+using static Utilities.BatchDownloaderUC.Enums;
 
 namespace BatchDownloaderUC.Models
 {
     public class DownloadingProcess
     {
+        /// <summary>
+        /// Private downloads list
+        /// </summary>
         private readonly List<Download> AllDownloads = new List<Download>();
 
         internal Download NextDownload => AllDownloads.FirstOrDefault(o => o.DownloadState == DownloadState.Pending);
         internal Download StartedDownload => AllDownloads.FirstOrDefault(o => o.DownloadState == DownloadState.Started);
 
+        /// <summary>
+        /// Downloads read-only collection
+        /// </summary>
         public ReadOnlyCollection<Download> DownloadsCollection
         {
             get
@@ -25,44 +34,91 @@ namespace BatchDownloaderUC.Models
 
         internal void AddDownloadToList(string url, string destination, string username, string password)
         {
-            if (string.IsNullOrEmpty(url)) throw new Exception("Url is empty");
-            if (!ValidationTests.IsUrlValid(url)) throw new Exception("Invalid URL");
-            if (string.IsNullOrEmpty(destination)) throw new Exception("Destination is empty");
-            if (!ValidationTests.IsDestinationValid(destination)) throw new Exception("Invalid destination path");
+            //basic validations
+            if (string.IsNullOrEmpty(url)) throw new DownloaderUCException(ErrorType.EmptyField, "Url");
+            if (!ValidationTests.IsUrlValid(url)) throw new DownloaderUCException(ErrorType.InvalidField, "Url");
+            if (string.IsNullOrEmpty(destination)) throw new DownloaderUCException(ErrorType.EmptyField, "Destination");
+            if (!ValidationTests.IsDestinationValid(destination)) throw new DownloaderUCException(ErrorType.InvalidField, "Destination");
 
-            
-            Download download = new Download(url, destination, username, password);
-            switch(download.Uri.Protocol)
+            try
             {
-                case Protocol.Http: CheckSpaceToAddDownload(download);
-                    break;
-                case Protocol.Ftp: CheckSpaceToAddDownloadTree(download.FtpFileInfo, download.Destination.FullPath);
-                    break;
+
+                //the download is born
+                Download download = new Download(url, destination, username, password);
+
+                //Check the space in disk before adding it. 
+                //in FTP case it also fixes the destination paths to prepare the directory tree recursively
+                switch (download.Uri.Protocol)
+                {
+                    case Protocol.Http:
+                        CheckSpaceToAddDownload(download);
+                        break;
+                    case Protocol.Ftp:
+                        CheckSpaceToAddDownloadTree(download.FtpFileInfo, download.Destination.FullPath);
+                        break;
+                    case Protocol.Sftp:
+                        //TODO
+                        break;
+                }
+
             }
+            catch (Exception ex)
+            {
+                DownloaderUCException.ThrowNewGeneral(new DownloaderUCException(ErrorType.GeneralErrorAddingDownload, ex));
+            }
+
+
         }
 
+        /// <summary>
+        /// Runs through each child (file or directory) and set the Path property in the Destination object of the download
+        /// thus why there is this need for that specific constructor in Download
+        /// </summary>
+        /// <param name="ftpFileInfo"></param>
+        /// <param name="chosenDestination"></param>
         private void CheckSpaceToAddDownloadTree(FtpInfo ftpFileInfo, string chosenDestination)
         {
             foreach(FtpInfo child in ftpFileInfo.ChildrenPaths)
             {
-                if (!child.IsDirectory)
+                try
                 {
-                    string newDestination = chosenDestination + "/" + child.FtpFolder;
-                    CheckSpaceToAddDownload(new Download(child.Url, newDestination, child));
+
+                    if (!child.IsDirectory)
+                    {
+                        string newDestination = chosenDestination + "/" + child.FtpFolder;
+                        CheckSpaceToAddDownload(new Download(child.Url, newDestination, child));
+                    }
+                    else
+                        CheckSpaceToAddDownloadTree(child, chosenDestination);
+
                 }
-                else
-                    CheckSpaceToAddDownloadTree(child, chosenDestination);
+                catch(Exception ex)
+                {
+                    DownloaderUCException.Throw(ex);
+                }
             }
         }
 
+        /// <summary>
+        /// Checks if there is space in disk for this next download. In case there isn't, an exception will 
+        /// </summary>
+        /// <param name="download"></param>
         private void CheckSpaceToAddDownload(Download download)
         {
-            if (download.Destination.GetTotalFreeSpace()-TotalSizeBytesRemainingToDownload() <= 0)
-                throw new Exception("Not enough space on disk");
+            if (download.Destination.GetTotalFreeSpace() - TotalSizeBytesRemainingToDownload(download.FileInfo.SizeBytes) <= 0)
+            {
+                download.ChangeState(DownloadState.Error, false, Enums.GetEnumDescription(ErrorType.InsufficientDiskSpace));
+                AllDownloads.Add(download);
+                throw new DownloaderUCException(ErrorType.InsufficientDiskSpaceFor,download.FileInfo.FileFullName,download.FileInfo.SizeInUnit);
+            }
             AllDownloads.Add(download);
         }
 
         public long TotalSizeBytesRemainingToDownload()
+        {
+            return TotalSizeBytesRemainingToDownload(0);
+        }
+        public long TotalSizeBytesRemainingToDownload(long newDownloadSize)
         {
             long totalSize = 0;
             AllDownloads.Where(o => o.DownloadState == Enums.DownloadState.Pending).ToList()
@@ -70,6 +126,7 @@ namespace BatchDownloaderUC.Models
             Download download = AllDownloads.FirstOrDefault(o => o.DownloadState == Enums.DownloadState.Started);
             if(download != null)
                 totalSize += download.FileInfo.SizeBytes - download.BytesReceived;
+            totalSize += newDownloadSize;
             return totalSize;
         }
         public long TotalSizeBytes()

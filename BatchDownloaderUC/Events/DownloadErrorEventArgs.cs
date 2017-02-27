@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static BatchDownloaderUC.Enums;
+﻿using BatchDownloaderUC.Utilities;
+using System;
+using static Utilities.BatchDownloaderUC.Enums;
+using Utilities.BatchDownloaderUC;
+using BatchDownloaderUC.Exceptions;
 
 namespace BatchDownloaderUC.Events
 {
@@ -13,17 +12,22 @@ namespace BatchDownloaderUC.Events
         public readonly ErrorType ErrorType;
         public readonly Exception Exception;
 
-        public DownloadErrorEventArgs(string errorMessage, Exception exception)
+        public DownloadErrorEventArgs(Exception exception)
         {
-            ErrorMessage = errorMessage;
-            Exception = exception;
+            if(exception.GetType() == typeof(DownloaderUCException))
+            {
+                ErrorMessage = ((DownloaderUCException)exception).ErrorMessage;
+                ErrorType = ((DownloaderUCException)exception).Error;
+                Exception = ((DownloaderUCException)exception).Exception;
+            }
+            else
+            {
+                Exception = exception;
+            }
         }
 
-        public DownloadErrorEventArgs(string errorMessage, ErrorType errorType, Exception exception)
-        {
-            this.ErrorMessage = errorMessage;
-            this.ErrorType = errorType;
-            this.Exception = exception;
+        public DownloadErrorEventArgs(ErrorType errorType, string suffix1, Exception e) : this(new DownloaderUCException(errorType, suffix1, e))
+        { 
         }
     }
 }

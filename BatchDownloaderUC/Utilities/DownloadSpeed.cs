@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BatchDownloaderUC.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BatchDownloaderUC
+namespace Utilities.BatchDownloaderUC
 {
     internal class DownloadSpeed
     {
@@ -24,7 +25,7 @@ namespace BatchDownloaderUC
 
         private System.Timers.Timer ticker = new System.Timers.Timer(1000);
 
-        internal DownloadSpeed(WebClient webClient, int maxPoints = 5)
+        internal DownloadSpeed(CustomWebClient webClient, int maxPoints = 5)
         {
             watch = new System.Diagnostics.Stopwatch();
 

@@ -7,11 +7,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace BatchDownloaderUC
+namespace Utilities.BatchDownloaderUC
 {
     internal static class Functions
     {       
-
+        /// <summary>
+        /// User friendly representation of a file size
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public static string ConvertSizeToUnit(long size)
         {
             if (size <= 0) throw new Exception("ConvertSizeToUnit threw an exception: invalid size number");
@@ -35,6 +39,11 @@ namespace BatchDownloaderUC
             return newNumber+unit;
         }
 
+        /// <summary>
+        /// User friendly representation of elapsed time
+        /// </summary>
+        /// <param name="totalSeconds"></param>
+        /// <returns></returns>
         public static string FormatTimeToString(double totalSeconds)
         {
             if (totalSeconds < 0) throw new Exception("ConvertTimeToString threw an exception: invalid amounbt of seconds");
@@ -58,7 +67,7 @@ namespace BatchDownloaderUC
                 {
                     if (time.Minutes > 0)
                     {
-                        timeStr += time.Minutes + (time.Minutes > 1 ? " minute " : " minute ");
+                        timeStr += time.Minutes + (time.Minutes > 1 ? " minutes " : " minute ");
                         if (time.Seconds > 0)
                             timeStr += time.Seconds + (time.Seconds > 1 ? " seconds " : " second ");
                     }

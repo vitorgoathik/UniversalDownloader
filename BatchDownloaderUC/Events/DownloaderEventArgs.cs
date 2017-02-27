@@ -12,9 +12,6 @@ namespace BatchDownloaderUC.Events
         public readonly string EstimatedTimeCurrentDownload;
         public readonly string EstimatedTimeTotal;
         public readonly string SpeedInUnit;
-        public DownloaderEventArgs()
-        {
-        }
         public DownloaderEventArgs(string estimatedTimeCurrentDownload, string estimatedTimeTotal, string speedInUnit)
         {
             EstimatedTimeTotal = estimatedTimeTotal;

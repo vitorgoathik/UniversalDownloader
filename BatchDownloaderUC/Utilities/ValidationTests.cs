@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static BatchDownloaderUC.Enums;
+using System.Text.RegularExpressions; 
 
-namespace BatchDownloaderUC
+namespace Utilities.BatchDownloaderUC
 {
     internal static class ValidationTests
     {

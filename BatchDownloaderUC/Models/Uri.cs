@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static BatchDownloaderUC.Enums;
+using Utilities.BatchDownloaderUC;
+using static Utilities.BatchDownloaderUC.Enums;
 
 namespace BatchDownloaderUC.Models
 {
@@ -16,6 +17,11 @@ namespace BatchDownloaderUC.Models
             this.Url = url;
             this.Protocol = GetProtocol(url);
         }
+        /// <summary>
+        /// Gets the protocol from a given Url
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         internal Protocol GetProtocol(string url)
         {
             if (!ValidationTests.IsUrlValid(url))

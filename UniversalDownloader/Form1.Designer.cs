@@ -52,19 +52,20 @@
             this.label3 = new System.Windows.Forms.Label();
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.EnterUrlLabel = new System.Windows.Forms.Label();
-            this.secondTicker = new System.Windows.Forms.Timer(this.components);
             this.downloadsGridView = new System.Windows.Forms.DataGridView();
-            this.FileNameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.FileSizeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ElapsedTimeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.StateColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DestinationColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.UrlColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DeleteSelectedButton = new System.Windows.Forms.Button();
             this.passwordTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.UsernameTextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.secondTicker = new System.Windows.Forms.Timer(this.components);
+            this.FileNameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.FileSizeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ElapsedTimeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.StateColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MessageColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DestinationColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.UrlColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.downloadPanel.SuspendLayout();
             this.fieldsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.downloadsGridView)).BeginInit();
@@ -104,9 +105,9 @@
             this.downloadPanel.Controls.Add(this.DownloadSpeedLabel);
             this.downloadPanel.Controls.Add(this.label1);
             this.downloadPanel.Controls.Add(this.DownloadProgressBar);
-            this.downloadPanel.Location = new System.Drawing.Point(29, 299);
+            this.downloadPanel.Location = new System.Drawing.Point(12, 299);
             this.downloadPanel.Name = "downloadPanel";
-            this.downloadPanel.Size = new System.Drawing.Size(434, 204);
+            this.downloadPanel.Size = new System.Drawing.Size(463, 204);
             this.downloadPanel.TabIndex = 18;
             this.downloadPanel.Visible = false;
             // 
@@ -124,9 +125,9 @@
             // 
             this.estimatedTimeLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.estimatedTimeLabel.ForeColor = System.Drawing.Color.Green;
-            this.estimatedTimeLabel.Location = new System.Drawing.Point(229, 22);
+            this.estimatedTimeLabel.Location = new System.Drawing.Point(224, 22);
             this.estimatedTimeLabel.Name = "estimatedTimeLabel";
-            this.estimatedTimeLabel.Size = new System.Drawing.Size(205, 56);
+            this.estimatedTimeLabel.Size = new System.Drawing.Size(226, 56);
             this.estimatedTimeLabel.TabIndex = 27;
             this.estimatedTimeLabel.TextAlign = System.Drawing.ContentAlignment.BottomRight;
             // 
@@ -134,7 +135,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(362, 3);
+            this.label6.Location = new System.Drawing.Point(378, 3);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(67, 19);
             this.label6.TabIndex = 26;
@@ -164,7 +165,7 @@
             this.OverallProgressPercentLabel.AutoSize = true;
             this.OverallProgressPercentLabel.BackColor = System.Drawing.Color.Transparent;
             this.OverallProgressPercentLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.OverallProgressPercentLabel.Location = new System.Drawing.Point(200, 170);
+            this.OverallProgressPercentLabel.Location = new System.Drawing.Point(210, 170);
             this.OverallProgressPercentLabel.Name = "OverallProgressPercentLabel";
             this.OverallProgressPercentLabel.Size = new System.Drawing.Size(29, 19);
             this.OverallProgressPercentLabel.TabIndex = 23;
@@ -172,7 +173,7 @@
             // 
             // OverallProgressProgressBar
             // 
-            this.OverallProgressProgressBar.Location = new System.Drawing.Point(4, 168);
+            this.OverallProgressProgressBar.Location = new System.Drawing.Point(14, 168);
             this.OverallProgressProgressBar.Name = "OverallProgressProgressBar";
             this.OverallProgressProgressBar.Size = new System.Drawing.Size(427, 23);
             this.OverallProgressProgressBar.TabIndex = 22;
@@ -181,7 +182,7 @@
             // 
             this.DownloadingFileLabel.AutoSize = true;
             this.DownloadingFileLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DownloadingFileLabel.Location = new System.Drawing.Point(-1, 4);
+            this.DownloadingFileLabel.Location = new System.Drawing.Point(3, 4);
             this.DownloadingFileLabel.Name = "DownloadingFileLabel";
             this.DownloadingFileLabel.Size = new System.Drawing.Size(129, 19);
             this.DownloadingFileLabel.TabIndex = 21;
@@ -192,7 +193,7 @@
             this.ProgressLabel.AutoSize = true;
             this.ProgressLabel.BackColor = System.Drawing.Color.Transparent;
             this.ProgressLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ProgressLabel.Location = new System.Drawing.Point(200, 83);
+            this.ProgressLabel.Location = new System.Drawing.Point(210, 83);
             this.ProgressLabel.Name = "ProgressLabel";
             this.ProgressLabel.Size = new System.Drawing.Size(29, 19);
             this.ProgressLabel.TabIndex = 20;
@@ -202,16 +203,16 @@
             // 
             this.DownloadSpeedLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DownloadSpeedLabel.ForeColor = System.Drawing.Color.Green;
-            this.DownloadSpeedLabel.Location = new System.Drawing.Point(129, 31);
+            this.DownloadSpeedLabel.Location = new System.Drawing.Point(128, 31);
             this.DownloadSpeedLabel.Name = "DownloadSpeedLabel";
-            this.DownloadSpeedLabel.Size = new System.Drawing.Size(84, 47);
+            this.DownloadSpeedLabel.Size = new System.Drawing.Size(97, 47);
             this.DownloadSpeedLabel.TabIndex = 18;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(0, 31);
+            this.label1.Location = new System.Drawing.Point(3, 31);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(127, 19);
             this.label1.TabIndex = 17;
@@ -219,7 +220,7 @@
             // 
             // DownloadProgressBar
             // 
-            this.DownloadProgressBar.Location = new System.Drawing.Point(4, 81);
+            this.DownloadProgressBar.Location = new System.Drawing.Point(14, 81);
             this.DownloadProgressBar.Name = "DownloadProgressBar";
             this.DownloadProgressBar.Size = new System.Drawing.Size(427, 23);
             this.DownloadProgressBar.TabIndex = 16;
@@ -295,12 +296,6 @@
             this.EnterUrlLabel.TabIndex = 18;
             this.EnterUrlLabel.Text = "URL:";
             // 
-            // secondTicker
-            // 
-            this.secondTicker.Enabled = true;
-            this.secondTicker.Interval = 1000;
-            this.secondTicker.Tick += new System.EventHandler(this.secondTicker_Tick);
-            // 
             // downloadsGridView
             // 
             this.downloadsGridView.AllowUserToAddRows = false;
@@ -314,6 +309,7 @@
             this.FileSizeColumn,
             this.ElapsedTimeColumn,
             this.StateColumn,
+            this.MessageColumn,
             this.DestinationColumn,
             this.UrlColumn});
             this.downloadsGridView.Location = new System.Drawing.Point(481, 51);
@@ -322,52 +318,6 @@
             this.downloadsGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.downloadsGridView.Size = new System.Drawing.Size(404, 389);
             this.downloadsGridView.TabIndex = 21;
-            // 
-            // FileNameColumn
-            // 
-            this.FileNameColumn.DataPropertyName = "FileName";
-            this.FileNameColumn.HeaderText = "File Name";
-            this.FileNameColumn.Name = "FileNameColumn";
-            this.FileNameColumn.ReadOnly = true;
-            // 
-            // FileSizeColumn
-            // 
-            this.FileSizeColumn.DataPropertyName = "FileSize";
-            this.FileSizeColumn.HeaderText = "File Size";
-            this.FileSizeColumn.Name = "FileSizeColumn";
-            this.FileSizeColumn.ReadOnly = true;
-            this.FileSizeColumn.Width = 80;
-            // 
-            // ElapsedTimeColumn
-            // 
-            this.ElapsedTimeColumn.DataPropertyName = "ElapsedTime";
-            this.ElapsedTimeColumn.HeaderText = "Elapsed Time";
-            this.ElapsedTimeColumn.Name = "ElapsedTimeColumn";
-            this.ElapsedTimeColumn.ReadOnly = true;
-            // 
-            // StateColumn
-            // 
-            this.StateColumn.DataPropertyName = "DownloadState";
-            this.StateColumn.HeaderText = "State";
-            this.StateColumn.Name = "StateColumn";
-            this.StateColumn.ReadOnly = true;
-            this.StateColumn.Width = 80;
-            // 
-            // DestinationColumn
-            // 
-            this.DestinationColumn.DataPropertyName = "Destination";
-            this.DestinationColumn.HeaderText = "Destination Folder";
-            this.DestinationColumn.Name = "DestinationColumn";
-            this.DestinationColumn.ReadOnly = true;
-            this.DestinationColumn.Width = 200;
-            // 
-            // UrlColumn
-            // 
-            this.UrlColumn.DataPropertyName = "Url";
-            this.UrlColumn.HeaderText = "Url";
-            this.UrlColumn.Name = "UrlColumn";
-            this.UrlColumn.ReadOnly = true;
-            this.UrlColumn.Width = 300;
             // 
             // DeleteSelectedButton
             // 
@@ -416,6 +366,65 @@
             this.label4.Size = new System.Drawing.Size(81, 19);
             this.label4.TabIndex = 26;
             this.label4.Text = "Username:";
+            // 
+            // secondTicker
+            // 
+            this.secondTicker.Enabled = true;
+            this.secondTicker.Interval = 2000;
+            this.secondTicker.Tick += new System.EventHandler(this.secondTicker_Tick);
+            // 
+            // FileNameColumn
+            // 
+            this.FileNameColumn.DataPropertyName = "FileName";
+            this.FileNameColumn.HeaderText = "File Name";
+            this.FileNameColumn.Name = "FileNameColumn";
+            this.FileNameColumn.ReadOnly = true;
+            // 
+            // FileSizeColumn
+            // 
+            this.FileSizeColumn.DataPropertyName = "FileSize";
+            this.FileSizeColumn.HeaderText = "File Size";
+            this.FileSizeColumn.Name = "FileSizeColumn";
+            this.FileSizeColumn.ReadOnly = true;
+            this.FileSizeColumn.Width = 80;
+            // 
+            // ElapsedTimeColumn
+            // 
+            this.ElapsedTimeColumn.DataPropertyName = "ElapsedTime";
+            this.ElapsedTimeColumn.HeaderText = "Elapsed Time";
+            this.ElapsedTimeColumn.Name = "ElapsedTimeColumn";
+            this.ElapsedTimeColumn.ReadOnly = true;
+            // 
+            // StateColumn
+            // 
+            this.StateColumn.DataPropertyName = "DownloadState";
+            this.StateColumn.HeaderText = "State";
+            this.StateColumn.Name = "StateColumn";
+            this.StateColumn.ReadOnly = true;
+            this.StateColumn.Width = 80;
+            // 
+            // MessageColumn
+            // 
+            this.MessageColumn.DataPropertyName = "Message";
+            this.MessageColumn.HeaderText = "Message";
+            this.MessageColumn.Name = "MessageColumn";
+            this.MessageColumn.ReadOnly = true;
+            // 
+            // DestinationColumn
+            // 
+            this.DestinationColumn.DataPropertyName = "Destination";
+            this.DestinationColumn.HeaderText = "Destination Folder";
+            this.DestinationColumn.Name = "DestinationColumn";
+            this.DestinationColumn.ReadOnly = true;
+            this.DestinationColumn.Width = 200;
+            // 
+            // UrlColumn
+            // 
+            this.UrlColumn.DataPropertyName = "Url";
+            this.UrlColumn.HeaderText = "Url";
+            this.UrlColumn.Name = "UrlColumn";
+            this.UrlColumn.ReadOnly = true;
+            this.UrlColumn.Width = 300;
             // 
             // Form1
             // 
@@ -471,19 +480,20 @@
         private System.Windows.Forms.Label overallEstimatedTime;
         private System.Windows.Forms.Label estimatedTimeLabel;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Timer secondTicker;
         private System.Windows.Forms.DataGridView downloadsGridView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn FileNameColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn FileSizeColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ElapsedTimeColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn StateColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn DestinationColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn UrlColumn;
         private System.Windows.Forms.Button DeleteSelectedButton;
         private System.Windows.Forms.TextBox passwordTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox UsernameTextBox;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Timer secondTicker;
+        private System.Windows.Forms.DataGridViewTextBoxColumn FileNameColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn FileSizeColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ElapsedTimeColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn StateColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn MessageColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DestinationColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn UrlColumn;
     }
 }
 

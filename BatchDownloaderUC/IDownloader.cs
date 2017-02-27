@@ -5,8 +5,8 @@ namespace BatchDownloaderUC
 {
     public interface IDownloader
     {
-        void AddDownload(string url, string destination);
-        void CancelCurrentDownload();
+        void AddDownload(string url, string destination, string username, string password);
+        void AbortCurrentDownload();
         void CancelDownloads(List<int> fileIndexes);
     }
 }

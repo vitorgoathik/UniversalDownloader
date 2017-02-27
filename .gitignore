@@ -1,1 +1,6 @@
 UniversalDownloader/bin/
+BatchDownloaderUC/obj/
+UniversalDownloader/obj/
+UniversalDownloaderUnitTests/bin/
+UniversalDownloaderUnitTests/obj/
+BatchDownloaderUC/bin/
