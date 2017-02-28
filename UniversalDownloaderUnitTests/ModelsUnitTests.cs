@@ -69,9 +69,15 @@ namespace UniversalDownloaderUnitTests
                 });
 
 
-            Download downloadState = new Download(new BatchDownloaderUC.Models.Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 100));
+            string downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            string fileName = "universaldownloader-filformodelsunnittest.txt";
+            string filePath = Path.Combine(downloadsFolder, fileName);
+            StreamWriter writer = File.CreateText(filePath);
+            writer.Write("123123");
+            writer.Flush();
+            writer.Close();
 
-
+            Download downloadState = new Download(new BatchDownloaderUC.Models.Destination(downloadsFolder), new RemoteFileInfo("", fileName, 100));
 
             Assert.DoesNotThrow(
                 delegate
@@ -82,27 +88,20 @@ namespace UniversalDownloaderUnitTests
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Deleted);
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Deleted);
 
-                    StreamWriter writer = File.CreateText("C:/ anyname.txt");
-                    writer.Write("sdasdasdasdasdasd");
-                    writer.Close();
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Error);
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Error);
-
-                    downloadState = new Download(new Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 123));
-                    writer = File.CreateText("C:/anyname.txt");
-                    writer.Write("sdasdasdasdasdasd");
-                    writer.Close();
+                     
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Canceled);
-                    Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Canceled);
+                    Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Error);
                     
 
                 });
             Assert.Throws(typeof(IOException),
                 delegate
                 {
-                    downloadState = new Download(new Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 123));
-                    StreamWriter writer = File.CreateText("C:/anyname.txt");
-                    writer.Write("sdasdasdasdasdasd");
+                    downloadState = new Download(new Destination(downloadsFolder), new RemoteFileInfo("", fileName, 123));
+                    writer = File.CreateText(filePath);
+                    writer.Write("123123");
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Pending);
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Started);
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Canceled);

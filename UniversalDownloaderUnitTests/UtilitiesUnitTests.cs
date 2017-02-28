@@ -37,12 +37,12 @@ namespace UniversalDownloaderUnitTests
                 });
 
             string downloadsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Downloads");
-            string fileName = "newfilewithaname.txt";
+            string fileName = "universaldownloader-filforutilitiessunnittest.txt";
             string filePath = Path.Combine(downloadsFolder, fileName);
-            StreamWriter file = File.CreateText(filePath);
-            file.Write("123123");
-            file.Flush();
-            file.Close();
+            StreamWriter writer = File.CreateText(filePath);
+            writer.Write("123123");
+            writer.Flush();
+            writer.Close();
             string newFileName = Functions.GetDistinguishedFileNameForSaving(fileName, downloadsFolder);
             Assert.AreNotEqual(newFileName,fileName);
             File.Delete(filePath);

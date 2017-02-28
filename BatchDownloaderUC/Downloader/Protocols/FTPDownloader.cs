@@ -56,7 +56,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
         }
 
         
-        public override void AbortCurrentDownload()
+        protected override void AbortCurrentDownload()
         {
             backgroundWorker.CancelAsync();
         }
@@ -90,7 +90,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(DownloadsController.CurrentDownload.RemoteFileInfo.Url);
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
                 request.UsePassive = false;
-                request.UseBinary = true;// use true for .zip file or false for a text file
+                request.UseBinary = true;
                 request.KeepAlive = true;
                 request.Credentials = Credentials;
 
@@ -117,12 +117,13 @@ namespace BatchDownloaderUC.Downloader.Protocols
                                 byte[] buffer = new byte[8000];//buffer sized 8KB (a bit above average for higher speed)
                                 DateTime DownloadStart = DateTime.Now; //this will help calculating the remaining time
                                 readCount = responseStream.Read(buffer, 0, buffer.Length); //start the read
-                                int sleep = 1; //this is to make the thread sleep for a fraction of second
+                                DateTime lastReport = DateTime.Now;//this will ensure we dont make hundreds of trips to the client every second
 
                                 while (readCount > 0)
                                 {
                                     if (backgroundWorker.CancellationPending)
                                     {
+                                        outputStream.Close();
                                         //cancelation was called. stop everything and report a cancel event to the view
                                         DownloadsController.CurrentDownload.ChangeState(DownloadState.Canceled);
                                         backgroundWorker.ReportProgress(0, true);
@@ -136,18 +137,19 @@ namespace BatchDownloaderUC.Downloader.Protocols
                                     //increment total
                                     totalWrittenBytesCount += readCount;
                                     //update the view with the change of progress in a single download
-                                    CalculateAndReportProgress(buffer.Length, totalWrittenBytesCount, DownloadStart);
+                                    
+                                    double timeDifferenceMilliseconds = DateTime.Now.Subtract(DownloadStart).TotalMilliseconds;
+                                    //this will assure the UI thread will be fully responsive
+                                    if(DateTime.Now.Subtract(lastReport).TotalMilliseconds > 500)
+                                    {
+                                        //having the interval to 1000 won't make the progress bar so smooth, 
+                                        //but at least the client won't freeze overloaded by  hundreds of form updates per second
+                                        CalculateAndReportProgress(timeDifferenceMilliseconds, buffer.Length, totalWrittenBytesCount);
+                                        lastReport = DateTime.Now;
+                                    }
 
                                     DownloadStart = DateTime.Now;
-
-                                    //if not for this, the view simply freezes. the lower 
-                                    //this number is (sleep == 30), more responsive is the UI, but slower the download
-                                    if (sleep == 15)
-                                    {
-                                        sleep = 1;
-                                        Thread.Sleep(1); //a fraction of 1/30 milisecond)
-                                    }
-                                    sleep++;
+                                    
                                 }
                             }
                         }
@@ -160,7 +162,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
                 //the state will change with a message to the view can show in some sort of datagrid
                 //Changestate will delete the partial data
                 DownloadsController.CurrentDownload.ChangeState(DownloadState.Error, true, Enums.GetEnumDescription(ErrorType.InsufficientDiskSpace));
-                //this is a hack to access the view under the same thread of the background worker.
+                //below is a way to access the view under the same thread of the background worker.
                 //the UI thread is only accessible from the events Report and Completed fired by the BW
                 backgroundWorker.ReportProgress(0, new DownloadErrorEventArgs(ErrorType.InsufficientDiskSpaceFor, DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName, ex));
                 //Disk is full = cancel
@@ -184,15 +186,10 @@ namespace BatchDownloaderUC.Downloader.Protocols
         /// <param name="bufferLength">the amount of data per block (buffer)</param>
         /// <param name="progress">download progress</param>
         /// <param name="DownloadStart">was updated last report to .Now</param>
-        private void CalculateAndReportProgress(int bufferLength, long progress, DateTime DownloadStart)
+        private void CalculateAndReportProgress(double timeDifferenceMilliseconds, int bufferLength, long progress)
         {
-            long speed;
-
-            TimeSpan DownloadSub = DateTime.Now.Subtract(
-                DownloadStart);
-
-            speed = DownloadSub.TotalMilliseconds > 0 ?
-                (long)Math.Round(bufferLength / DownloadSub.TotalMilliseconds) * 10000
+            long speed = timeDifferenceMilliseconds > 0 ?
+                (long)Math.Round(bufferLength / timeDifferenceMilliseconds) * 16000
                 : 0;
             //the line below is always needed for those equations
             DownloadsController.CurrentDownload.BytesReceived = progress;
@@ -208,7 +205,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
             //when it finishes the current ftp download
             DownloadsController.CurrentDownload.ChangeState(DownloadState.Completed);
             //start the next one
-            StartDownloading();
+            ProtocolStartDownloading();
         }
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)

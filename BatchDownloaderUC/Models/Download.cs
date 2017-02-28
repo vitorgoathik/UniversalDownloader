@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Windows.Forms;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
 
@@ -83,18 +84,19 @@ namespace BatchDownloaderUC.Models
                         break;
                     case DownloadState.Canceled:
                         //deletes partial data on cancel
+                        
                         if (DownloadState == DownloadState.Started || DownloadState == DownloadState.Deleted)
                             System.IO.File.Delete(Path.Combine(Destination.FullPath, RemoteFileInfo.FileFullName));
                         break;
                     case DownloadState.Deleted:
-                        if (DownloadState == DownloadState.Completed) return;
+                        if (DownloadState == DownloadState.Completed || DownloadState == DownloadState.Closed) return;
                         break;
                 }
-            }
+                }
             catch (System.IO.IOException ex)
             {
                 //the file was not there or it is being used change the state anyway
-                DownloadState = state;
+                DownloadState = state;  
                 throw ex;
             }
             DownloadState = state;

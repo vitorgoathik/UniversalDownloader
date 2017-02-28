@@ -8,7 +8,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
 {
     internal class CustomProtocolDownloader : Downloader
     {
-        public override void AbortCurrentDownload()
+        protected override void AbortCurrentDownload()
         {
             throw new NotImplementedException();
         }

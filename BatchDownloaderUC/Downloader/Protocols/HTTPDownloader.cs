@@ -13,11 +13,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
+using System.Threading;
+using System.Net.NetworkInformation;
 
 namespace BatchDownloaderUC.Downloader.Protocols
 {
     public class HTTPDownloader : Downloader
-    {        
+    {
+        internal HTTPDownloader()
+        {
+            NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChanged;
+        }
+
         protected override void AddDownloadToList(string url, string destination, string username, string password)
         {
             string fileName;
@@ -26,7 +33,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
             DownloadsController.AddDownloadToList(new Download(new Destination(destination), new RemoteFileInfo(url, fileName, size)));
         }
 
-        public override void AbortCurrentDownload()
+        protected override void AbortCurrentDownload()
         {
             client.CancelAsync();
         }
@@ -93,7 +100,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
             //the "speed" is a watch that marks time data such as ElapsedTimeInSeconds
             DownloadsController.CurrentDownload.ElapsedTimeInSeconds = speed.ElapsedTimeInSeconds;
             //proceed to the next of the line
-            StartDownloading();
+            ProtocolStartDownloading();
         }
         #endregion
 

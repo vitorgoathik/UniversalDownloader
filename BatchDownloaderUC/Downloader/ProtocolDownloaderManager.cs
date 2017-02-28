@@ -13,7 +13,12 @@ namespace BatchDownloaderUC.Downloader
     public static class ProtocolDownloaderManager
     {
         private static Downloader downloader;
-
+        internal static bool Shutdown = false;
+        /// <summary>
+        /// Gets the right instance of transfer protocol to perform the tasks
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public static object GetInstance(string url)
         {
             switch (Functions.GetProtocol(url))

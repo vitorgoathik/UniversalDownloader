@@ -37,7 +37,7 @@ namespace BatchDownloaderUC.Downloader.Protocols
             }
         }
 
-        public override void AbortCurrentDownload()
+        protected override void AbortCurrentDownload()
         {
             throw new NotImplementedException();
         }

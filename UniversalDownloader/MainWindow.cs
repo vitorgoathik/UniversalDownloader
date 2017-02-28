@@ -19,8 +19,7 @@ namespace UniversalDownloader
         {
             InitializeComponent();
             DestinationTextBox.Text = GetDownloadsFolder();
-            DownloadProgressBar.Maximum = 100;
-            OverallProgressProgressBar.Maximum = 100;
+            urlTextBox.Focus();
         }
 
 
@@ -59,17 +58,17 @@ namespace UniversalDownloader
 
         private void InitializeDownloader(string url)
         {
-                downloaderUC = ((Downloader)ProtocolDownloaderManager.GetInstance(url));
+            downloaderUC = ((Downloader)ProtocolDownloaderManager.GetInstance(url));
                 
-                downloaderUC.DownloadAdded += DownloaderUC_DownloadAdded;
-                downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
+            downloaderUC.DownloadAdded += DownloaderUC_DownloadAdded;
+            downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
             downloaderUC.DownloadStarted += DownloaderUC_DownloadStarted;
-                downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
-                downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
-                downloaderUC.DownloadsControllerCompleted += DownloaderUC_DownloadsControllerCompleted;
-                downloaderUC.ProcessError += DownloaderUC_ProcessError;
-                downloaderUC.DownloadCanceled += DownloaderUC_DownloadCanceled;
-                downloaderUC.DownloadsUpdated += DownloaderUC_DownloadsUpdated;
+            downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
+            downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
+            downloaderUC.DownloadsControllerCompleted += DownloaderUC_DownloadsControllerCompleted;
+            downloaderUC.ProcessError += DownloaderUC_ProcessError;
+            downloaderUC.DownloadCanceled += DownloaderUC_DownloadCanceled;
+            downloaderUC.DownloadsUpdated += DownloaderUC_DownloadsUpdated;
         }
 
         private void SaveAsButton_Click(object sender, EventArgs e)
@@ -95,12 +94,7 @@ namespace UniversalDownloader
                 downloaderUC.CancelDownloads(fileIndexes);
             }
         }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //cancel (and delete parts) on close
-            downloaderUC?.AbortCurrentDownload();
-        }
+        
 
         private void secondTicker_Tick(object sender, EventArgs e)
         {
@@ -184,10 +178,10 @@ namespace UniversalDownloader
         private void DownloaderUC_DownloadCanceled(object sender, DownloadCanceledEventArgs e)
         {
             validationLabel.ForeColor = Color.Red;
-            if(e.FileName != "")
+            if(e.FileName != null)
                 validationLabel.Text = "Download canceled: " + e.FileName;
             else
-                validationLabel.Text = "Downloads canceled";
+                validationLabel.Text = "Selected downloads canceled";
         }
         private void DownloaderUC_DownloadsUpdated(object sender)
         {

@@ -46,19 +46,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.DownloadProgressBar = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
-            this.fieldsPanel = new System.Windows.Forms.Panel();
-            this.SaveAsButton = new System.Windows.Forms.Button();
-            this.DestinationTextBox = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.urlTextBox = new System.Windows.Forms.TextBox();
-            this.EnterUrlLabel = new System.Windows.Forms.Label();
             this.downloadsGridView = new System.Windows.Forms.DataGridView();
-            this.DeleteSelectedButton = new System.Windows.Forms.Button();
-            this.passwordTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.UsernameTextBox = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.secondTicker = new System.Windows.Forms.Timer(this.components);
             this.FileNameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.FileSizeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ElapsedTimeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -66,8 +54,18 @@
             this.MessageColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DestinationColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.UrlColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DeleteSelectedButton = new System.Windows.Forms.Button();
+            this.passwordTextBox = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.UsernameTextBox = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.secondTicker = new System.Windows.Forms.Timer(this.components);
+            this.SaveAsButton = new System.Windows.Forms.Button();
+            this.DestinationTextBox = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.urlTextBox = new System.Windows.Forms.TextBox();
+            this.EnterUrlLabel = new System.Windows.Forms.Label();
             this.downloadPanel.SuspendLayout();
-            this.fieldsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.downloadsGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -75,7 +73,7 @@
             // 
             this.validationLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.validationLabel.ForeColor = System.Drawing.Color.Red;
-            this.validationLabel.Location = new System.Drawing.Point(25, 250);
+            this.validationLabel.Location = new System.Drawing.Point(22, 239);
             this.validationLabel.Name = "validationLabel";
             this.validationLabel.Size = new System.Drawing.Size(435, 46);
             this.validationLabel.TabIndex = 3;
@@ -83,7 +81,7 @@
             // DownloadButton
             // 
             this.DownloadButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DownloadButton.Location = new System.Drawing.Point(341, 184);
+            this.DownloadButton.Location = new System.Drawing.Point(335, 158);
             this.DownloadButton.Name = "DownloadButton";
             this.DownloadButton.Size = new System.Drawing.Size(122, 61);
             this.DownloadButton.TabIndex = 5;
@@ -125,9 +123,9 @@
             // 
             this.estimatedTimeLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.estimatedTimeLabel.ForeColor = System.Drawing.Color.Green;
-            this.estimatedTimeLabel.Location = new System.Drawing.Point(224, 22);
+            this.estimatedTimeLabel.Location = new System.Drawing.Point(224, 24);
             this.estimatedTimeLabel.Name = "estimatedTimeLabel";
-            this.estimatedTimeLabel.Size = new System.Drawing.Size(226, 56);
+            this.estimatedTimeLabel.Size = new System.Drawing.Size(217, 46);
             this.estimatedTimeLabel.TabIndex = 27;
             this.estimatedTimeLabel.TextAlign = System.Drawing.ContentAlignment.BottomRight;
             // 
@@ -135,7 +133,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(378, 3);
+            this.label6.Location = new System.Drawing.Point(374, 5);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(67, 19);
             this.label6.TabIndex = 26;
@@ -235,67 +233,6 @@
             this.label5.TabIndex = 19;
             this.label5.Text = "Batch File Downloader";
             // 
-            // fieldsPanel
-            // 
-            this.fieldsPanel.Controls.Add(this.SaveAsButton);
-            this.fieldsPanel.Controls.Add(this.DestinationTextBox);
-            this.fieldsPanel.Controls.Add(this.label3);
-            this.fieldsPanel.Controls.Add(this.urlTextBox);
-            this.fieldsPanel.Controls.Add(this.EnterUrlLabel);
-            this.fieldsPanel.Location = new System.Drawing.Point(29, 51);
-            this.fieldsPanel.Name = "fieldsPanel";
-            this.fieldsPanel.Size = new System.Drawing.Size(434, 122);
-            this.fieldsPanel.TabIndex = 20;
-            // 
-            // SaveAsButton
-            // 
-            this.SaveAsButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.SaveAsButton.Image = global::UniversalDownloader.Properties.Resources.saveonfolder;
-            this.SaveAsButton.Location = new System.Drawing.Point(386, 76);
-            this.SaveAsButton.Name = "SaveAsButton";
-            this.SaveAsButton.Size = new System.Drawing.Size(37, 31);
-            this.SaveAsButton.TabIndex = 22;
-            this.SaveAsButton.UseVisualStyleBackColor = true;
-            this.SaveAsButton.Click += new System.EventHandler(this.SaveAsButton_Click);
-            // 
-            // DestinationTextBox
-            // 
-            this.DestinationTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DestinationTextBox.Location = new System.Drawing.Point(102, 74);
-            this.DestinationTextBox.Multiline = true;
-            this.DestinationTextBox.Name = "DestinationTextBox";
-            this.DestinationTextBox.Size = new System.Drawing.Size(278, 34);
-            this.DestinationTextBox.TabIndex = 2;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(-2, 81);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(90, 19);
-            this.label3.TabIndex = 20;
-            this.label3.Text = "Destination:";
-            // 
-            // urlTextBox
-            // 
-            this.urlTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.urlTextBox.Location = new System.Drawing.Point(102, 14);
-            this.urlTextBox.Multiline = true;
-            this.urlTextBox.Name = "urlTextBox";
-            this.urlTextBox.Size = new System.Drawing.Size(321, 43);
-            this.urlTextBox.TabIndex = 1;
-            // 
-            // EnterUrlLabel
-            // 
-            this.EnterUrlLabel.AutoSize = true;
-            this.EnterUrlLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.EnterUrlLabel.Location = new System.Drawing.Point(-2, 22);
-            this.EnterUrlLabel.Name = "EnterUrlLabel";
-            this.EnterUrlLabel.Size = new System.Drawing.Size(39, 19);
-            this.EnterUrlLabel.TabIndex = 18;
-            this.EnterUrlLabel.Text = "URL:";
-            // 
             // downloadsGridView
             // 
             this.downloadsGridView.AllowUserToAddRows = false;
@@ -318,60 +255,6 @@
             this.downloadsGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.downloadsGridView.Size = new System.Drawing.Size(404, 389);
             this.downloadsGridView.TabIndex = 21;
-            // 
-            // DeleteSelectedButton
-            // 
-            this.DeleteSelectedButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DeleteSelectedButton.Location = new System.Drawing.Point(763, 450);
-            this.DeleteSelectedButton.Name = "DeleteSelectedButton";
-            this.DeleteSelectedButton.Size = new System.Drawing.Size(122, 44);
-            this.DeleteSelectedButton.TabIndex = 23;
-            this.DeleteSelectedButton.Text = "Delete Selected";
-            this.DeleteSelectedButton.UseVisualStyleBackColor = true;
-            this.DeleteSelectedButton.Click += new System.EventHandler(this.DeleteSelectedButton_Click);
-            // 
-            // passwordTextBox
-            // 
-            this.passwordTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.passwordTextBox.Location = new System.Drawing.Point(131, 222);
-            this.passwordTextBox.Name = "passwordTextBox";
-            this.passwordTextBox.PasswordChar = '*';
-            this.passwordTextBox.Size = new System.Drawing.Size(181, 23);
-            this.passwordTextBox.TabIndex = 4;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(32, 222);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 19);
-            this.label2.TabIndex = 28;
-            this.label2.Text = "Password:";
-            // 
-            // UsernameTextBox
-            // 
-            this.UsernameTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.UsernameTextBox.Location = new System.Drawing.Point(131, 184);
-            this.UsernameTextBox.Name = "UsernameTextBox";
-            this.UsernameTextBox.Size = new System.Drawing.Size(181, 23);
-            this.UsernameTextBox.TabIndex = 3;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(32, 184);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(81, 19);
-            this.label4.TabIndex = 26;
-            this.label4.Text = "Username:";
-            // 
-            // secondTicker
-            // 
-            this.secondTicker.Enabled = true;
-            this.secondTicker.Interval = 2000;
-            this.secondTicker.Tick += new System.EventHandler(this.secondTicker_Tick);
             // 
             // FileNameColumn
             // 
@@ -426,30 +309,132 @@
             this.UrlColumn.ReadOnly = true;
             this.UrlColumn.Width = 300;
             // 
-            // Form1
+            // DeleteSelectedButton
+            // 
+            this.DeleteSelectedButton.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DeleteSelectedButton.Location = new System.Drawing.Point(763, 450);
+            this.DeleteSelectedButton.Name = "DeleteSelectedButton";
+            this.DeleteSelectedButton.Size = new System.Drawing.Size(122, 44);
+            this.DeleteSelectedButton.TabIndex = 23;
+            this.DeleteSelectedButton.Text = "Delete Selected";
+            this.DeleteSelectedButton.UseVisualStyleBackColor = true;
+            this.DeleteSelectedButton.Click += new System.EventHandler(this.DeleteSelectedButton_Click);
+            // 
+            // passwordTextBox
+            // 
+            this.passwordTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.passwordTextBox.Location = new System.Drawing.Point(136, 196);
+            this.passwordTextBox.Name = "passwordTextBox";
+            this.passwordTextBox.PasswordChar = '*';
+            this.passwordTextBox.Size = new System.Drawing.Size(181, 23);
+            this.passwordTextBox.TabIndex = 4;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(32, 196);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 19);
+            this.label2.TabIndex = 28;
+            this.label2.Text = "Password:";
+            // 
+            // UsernameTextBox
+            // 
+            this.UsernameTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.UsernameTextBox.Location = new System.Drawing.Point(136, 158);
+            this.UsernameTextBox.Name = "UsernameTextBox";
+            this.UsernameTextBox.Size = new System.Drawing.Size(181, 23);
+            this.UsernameTextBox.TabIndex = 3;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(32, 158);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(81, 19);
+            this.label4.TabIndex = 26;
+            this.label4.Text = "Username:";
+            // 
+            // secondTicker
+            // 
+            this.secondTicker.Enabled = true;
+            this.secondTicker.Interval = 1000;
+            this.secondTicker.Tick += new System.EventHandler(this.secondTicker_Tick);
+            // 
+            // SaveAsButton
+            // 
+            this.SaveAsButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.SaveAsButton.Image = global::UniversalDownloader.Properties.Resources.saveonfolder;
+            this.SaveAsButton.Location = new System.Drawing.Point(420, 112);
+            this.SaveAsButton.Name = "SaveAsButton";
+            this.SaveAsButton.Size = new System.Drawing.Size(37, 31);
+            this.SaveAsButton.TabIndex = 33;
+            this.SaveAsButton.UseVisualStyleBackColor = true;
+            // 
+            // DestinationTextBox
+            // 
+            this.DestinationTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DestinationTextBox.Location = new System.Drawing.Point(136, 118);
+            this.DestinationTextBox.Name = "DestinationTextBox";
+            this.DestinationTextBox.Size = new System.Drawing.Size(278, 23);
+            this.DestinationTextBox.TabIndex = 30;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(32, 118);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(90, 19);
+            this.label3.TabIndex = 32;
+            this.label3.Text = "Destination:";
+            // 
+            // urlTextBox
+            // 
+            this.urlTextBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.urlTextBox.Location = new System.Drawing.Point(136, 54);
+            this.urlTextBox.Multiline = true;
+            this.urlTextBox.Name = "urlTextBox";
+            this.urlTextBox.Size = new System.Drawing.Size(321, 43);
+            this.urlTextBox.TabIndex = 29;
+            // 
+            // EnterUrlLabel
+            // 
+            this.EnterUrlLabel.AutoSize = true;
+            this.EnterUrlLabel.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EnterUrlLabel.Location = new System.Drawing.Point(32, 66);
+            this.EnterUrlLabel.Name = "EnterUrlLabel";
+            this.EnterUrlLabel.Size = new System.Drawing.Size(39, 19);
+            this.EnterUrlLabel.TabIndex = 31;
+            this.EnterUrlLabel.Text = "URL:";
+            // 
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Snow;
             this.ClientSize = new System.Drawing.Size(912, 506);
+            this.Controls.Add(this.SaveAsButton);
+            this.Controls.Add(this.DestinationTextBox);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.urlTextBox);
+            this.Controls.Add(this.EnterUrlLabel);
             this.Controls.Add(this.passwordTextBox);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.UsernameTextBox);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.DeleteSelectedButton);
             this.Controls.Add(this.downloadsGridView);
-            this.Controls.Add(this.fieldsPanel);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.downloadPanel);
             this.Controls.Add(this.DownloadButton);
             this.Controls.Add(this.validationLabel);
-            this.Name = "Form1";
+            this.Name = "MainWindow";
             this.Text = "Universal Downloader";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.downloadPanel.ResumeLayout(false);
             this.downloadPanel.PerformLayout();
-            this.fieldsPanel.ResumeLayout(false);
-            this.fieldsPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.downloadsGridView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -470,12 +455,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ProgressBar DownloadProgressBar;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Panel fieldsPanel;
-        private System.Windows.Forms.Button SaveAsButton;
-        private System.Windows.Forms.TextBox DestinationTextBox;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox urlTextBox;
-        private System.Windows.Forms.Label EnterUrlLabel;
         private System.Windows.Forms.Label fileNameLabel;
         private System.Windows.Forms.Label overallEstimatedTime;
         private System.Windows.Forms.Label estimatedTimeLabel;
@@ -494,6 +473,11 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn MessageColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn DestinationColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn UrlColumn;
+        private System.Windows.Forms.Button SaveAsButton;
+        private System.Windows.Forms.TextBox DestinationTextBox;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox urlTextBox;
+        private System.Windows.Forms.Label EnterUrlLabel;
     }
 }
 
