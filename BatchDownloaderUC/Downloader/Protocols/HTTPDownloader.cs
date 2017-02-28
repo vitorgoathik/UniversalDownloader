@@ -1,6 +1,7 @@
 ﻿using BatchDownloaderUC.Events;
 using BatchDownloaderUC.Exceptions;
 using BatchDownloaderUC.Models;
+using BatchDownloaderUC.Controller;
 using BatchDownloaderUC.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,16 +14,16 @@ using System.Threading.Tasks;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
 
-namespace BatchDownloaderUC.Protocols
+namespace BatchDownloaderUC.Downloader.Protocols
 {
-    public class HTTPDownloader : IDownloader
-    {
+    public class HTTPDownloader : Downloader
+    {        
         protected override void AddDownloadToList(string url, string destination, string username, string password)
         {
             string fileName;
             long size;
             GetHttpHeaderInfo(url, out fileName, out size);
-            DownloadingProcess.AddDownloadToList(new Download(new Destination(destination), new RemoteFileInfo(url, fileName, size)));
+            DownloadsController.AddDownloadToList(new Download(new Destination(destination), new RemoteFileInfo(url, fileName, size)));
         }
 
         public override void AbortCurrentDownload()
@@ -39,7 +40,7 @@ namespace BatchDownloaderUC.Protocols
         {
             try
             {
-                Directory.CreateDirectory(CurrentDownload.Destination.FullPath);
+                Directory.CreateDirectory(DownloadsController.CurrentDownload.Destination.FullPath);
                 //Http is way more simple than FTP, since it has a built in background worker, no authentication and no folders
                 using (client = new CustomWebClient())
                 {
@@ -50,13 +51,13 @@ namespace BatchDownloaderUC.Protocols
                     client.DownloadFileCompleted += CustomWebClientDownloadCompleted;
                     OnDownloadStarted();
                     //downloads the file and save in the selected destination
-                    client.DownloadFileAsync(new Uri(CurrentDownload.RemoteFileInfo.Url), GetDistinguishedFileNameForSaving());
+                    client.DownloadFileAsync(new Uri(DownloadsController.CurrentDownload.RemoteFileInfo.Url), UpdateFileNameWithDistinguishedName());
                 }
             }
             catch (Exception e)
             {
-                CurrentDownload.ChangeState(DownloadState.Error, true);
-                OnProcessError(new DownloadErrorEventArgs(ErrorType.GeneralErrorOnDownload, CurrentDownload.RemoteFileInfo.FileFullName, e));
+                DownloadsController.CurrentDownload.ChangeState(DownloadState.Error, true);
+                OnProcessError(new DownloadErrorEventArgs(ErrorType.GeneralErrorOnDownload, DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName, e));
             }
             finally
             {
@@ -69,11 +70,12 @@ namespace BatchDownloaderUC.Protocols
         {
             //File level progress has changed. The download is fed with BytesReceived, 
             //so that it can calculate some status data internally and send to the view
-            CurrentDownload.BytesReceived = e.BytesReceived;
+            DownloadsController.CurrentDownload.BytesReceived = e.BytesReceived;
             OnProgressChanged(new DownloaderEventArgs(
-                CurrentDownload.GetRemainingTimeString(speed.Speed),
-                DownloadingProcess.GetRemainingTimeString(speed.Speed),
-                speed.SpeedInUnit));
+                DownloadsController.CurrentDownload.GetRemainingTimeString(speed.Speed),
+                DownloadsController.GetRemainingTimeString(speed.Speed),
+                speed.SpeedInUnit,
+                DownloadsController.CurrentDownload.PercentCompleted(), DownloadsController.PercentCompleted()));
         }
 
         private void CustomWebClientDownloadCompleted(object sender, AsyncCompletedEventArgs args)
@@ -81,15 +83,15 @@ namespace BatchDownloaderUC.Protocols
             //the two ways to reach here are: completion and cancelation
             if (args.Cancelled)
             {
-                string name = CurrentDownload.RemoteFileInfo.FileFullName;
-                CurrentDownload.ChangeState(DownloadState.Canceled);
+                string name = DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName;
+                DownloadsController.CurrentDownload.ChangeState(DownloadState.Canceled);
                 //calls the view providing the canceled name
                 OnDownloadCanceled(new DownloadCanceledEventArgs(name));
             }
             else
-                CurrentDownload.ChangeState(DownloadState.Completed);
+                DownloadsController.CurrentDownload.ChangeState(DownloadState.Completed);
             //the "speed" is a watch that marks time data such as ElapsedTimeInSeconds
-            CurrentDownload.ElapsedTimeInSeconds = speed.ElapsedTimeInSeconds;
+            DownloadsController.CurrentDownload.ElapsedTimeInSeconds = speed.ElapsedTimeInSeconds;
             //proceed to the next of the line
             StartDownloading();
         }

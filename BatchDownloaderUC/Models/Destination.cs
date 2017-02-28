@@ -14,7 +14,7 @@ namespace BatchDownloaderUC.Models
         /// <summary>
         /// Ex: C:/Program Files/Installed Software
         /// </summary>
-        public readonly string FullPath;
+        public string FullPath { get; internal set; }
         /// <summary>
         /// Ex: New Software.exe
         /// </summary>

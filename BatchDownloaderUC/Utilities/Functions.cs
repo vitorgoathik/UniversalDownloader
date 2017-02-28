@@ -20,7 +20,7 @@ namespace Utilities.BatchDownloaderUC
         internal static Protocol GetProtocol(string url)
         {
             if (!ValidationTests.IsUrlValid(url))
-                throw new Exception("Uri GetProtocol: Invalid Url");
+                throw new Exception("Invalid Url");
             switch (new System.Uri(url).Scheme.ToLower())
             {
                 case "http":
@@ -98,5 +98,24 @@ namespace Utilities.BatchDownloaderUC
             return timeStr;
         }
 
+
+        /// <summary>
+        /// This method will return an unique name by adding (increment) to their suffix
+        /// </summary>
+        /// <returns>ex: File(2).ext, in case there are two more files named "File" in the folder</returns> 
+        internal static string GetDistinguishedFileNameForSaving(string oldFileName, string destination)
+        {
+            string ext = Path.GetExtension(oldFileName);
+            string fileNameWithoutExt = ext != "" ? oldFileName.Replace(ext, "") : oldFileName;
+
+            //then the suffix is built
+            string filenameFormat = fileNameWithoutExt + "{0}" + ext;
+            string filename = string.Format(filenameFormat, "");
+            //and increment baseed on the other files having the same name inside the folder
+            int i = 1;
+            while (File.Exists(destination + "/" + filename))
+                filename = string.Format(filenameFormat, "(" + (i++) + ")");
+            return filename;
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BatchDownloaderUC.Events;
+using BatchDownloaderUC.Exceptions;
 using BatchDownloaderUC.Models;
 using System;
 using System.Collections.Generic;
@@ -7,28 +8,23 @@ using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Windows.Forms;
+using Utilities.BatchDownloaderUC;
+using BatchDownloaderUC.Controller;
 using static Utilities.BatchDownloaderUC.Enums;
 
-namespace BatchDownloaderUC
+namespace BatchDownloaderUC.Downloader
 {
-    public abstract class IDownloader
+    public abstract class Downloader
     {
 
         #region common fields 
 
-        public NetworkCredential Credentials;
-        public Download CurrentDownload { get; set; } 
-        private DownloadingProcess downloadingProcess;
-        public DownloadingProcess DownloadingProcess
-        {
-            get
-            {
-                if(downloadingProcess == null)
-                    downloadingProcess = new DownloadingProcess();
-                return downloadingProcess;
-            }
-        }
+        /// <summary>
+        /// This object will be referenced by a single instance
+        /// </summary>
+        public DownloadsController DownloadsController { get; set; }
 
+        internal NetworkCredential Credentials;
 
         #endregion
 
@@ -89,21 +85,21 @@ namespace BatchDownloaderUC
         protected virtual void StartDownloading()
         {
             //process not started || download pending 
-            if (DownloadingProcess == null || DownloadingProcess.StartedDownload != null)
+            if (DownloadsController.CurrentDownload?.DownloadState == DownloadState.Started)
                 return;
 
             //the waiting list has been completely served
-            if (DownloadingProcess.NextDownload == null)
+            if (DownloadsController.NextDownload == null)
             {
-                DownloadingProcess.ClearDownloads();
-                OnDownloadingProcessCompleted();
+                DownloadsController.ClearDownloads();
+                OnDownloadsControllerCompleted();
                 return;
             }
 
             //else, we have our next download to start
-            CurrentDownload = DownloadingProcess.NextDownload;
+            DownloadsController.CurrentDownload = DownloadsController.NextDownload;
 
-            DownloadingProcess.NextDownload.ChangeState(DownloadState.Started);
+            DownloadsController.CurrentDownload.ChangeState(DownloadState.Started);
 
             //the second event
             OnProcessStarted();
@@ -117,30 +113,20 @@ namespace BatchDownloaderUC
         /// <param name="fileIndexes"></param>
         public virtual void CancelDownloads(List<int> fileIndexes)
         {
-            if (DownloadingProcess.CancelDownloads(fileIndexes))
+            if (DownloadsController.CancelDownloads(fileIndexes))
                 AbortCurrentDownload();
             else
                 OnDownloadCanceled(new DownloadCanceledEventArgs());
         }
-        /// <summary>
-        /// This method will return an unique name by adding (increment) to their suffix
-        /// </summary>
-        /// <returns>ex: File(2).ext, in case there are two more files named "File" in the folder</returns> 
-        internal virtual string GetDistinguishedFileNameForSaving()
+        internal virtual string UpdateFileNameWithDistinguishedName()
         {
-            //first the file must be separated from its extension
-            string ext = Path.GetExtension(CurrentDownload.RemoteFileInfo.FileFullName);
-            string fileNameWithoutExt = ext != "" ? CurrentDownload.RemoteFileInfo.FileFullName.Replace(ext, "") : CurrentDownload.RemoteFileInfo.FileFullName;
+            DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName = 
+                Functions.GetDistinguishedFileNameForSaving(
+                    DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName, 
+                    DownloadsController.CurrentDownload.Destination.FullPath);
 
-            //then the suffix is built
-            string filenameFormat = fileNameWithoutExt + "{0}" + ext;
-            string filename = string.Format(filenameFormat, "");
-            //and increment baseed on the other files having the same name inside the folder
-            int i = 1;
-            while (File.Exists(CurrentDownload.Destination.FullPath + "/" + filename))
-                filename = string.Format(filenameFormat, "(" + (i++) + ")");
-            CurrentDownload.RemoteFileInfo.FileFullName = filename;
-            return CurrentDownload.Destination.FullPath + "/" + filename;
+            return Path.Combine(DownloadsController.CurrentDownload.Destination.FullPath,
+                DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName);
         }
         #endregion
 
@@ -155,8 +141,8 @@ namespace BatchDownloaderUC
         public event DownloadStartedEventHandler DownloadStarted;
         public delegate void ProgressChangedEventHandler(object sender, DownloaderEventArgs e);
         public event ProgressChangedEventHandler ProgressChanged;
-        public delegate void DownloadingProcessCompletedEventHandler(object sender);
-        public event DownloadingProcessCompletedEventHandler DownloadingProcessCompleted;
+        public delegate void DownloadsControllerCompletedEventHandler(object sender);
+        public event DownloadsControllerCompletedEventHandler DownloadsControllerCompleted;
         public delegate void OverallProgressChangedEventHandler(object sender);
         public event OverallProgressChangedEventHandler OverallProgressChanged;
         public delegate void ProcessErrorEventHandler(object sender, DownloadErrorEventArgs e);
@@ -185,9 +171,9 @@ namespace BatchDownloaderUC
         {
             ProgressChanged?.Invoke(this, e);
         }
-        protected void OnDownloadingProcessCompleted()
+        protected void OnDownloadsControllerCompleted()
         {
-            DownloadingProcessCompleted?.Invoke(this);
+            DownloadsControllerCompleted?.Invoke(this);
             DownloadsUpdated?.Invoke(this);
         }
         protected void OnOverallProgressChanged()

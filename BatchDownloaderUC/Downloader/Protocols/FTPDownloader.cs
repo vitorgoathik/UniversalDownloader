@@ -1,6 +1,7 @@
 ﻿using BatchDownloaderUC.Events;
 using BatchDownloaderUC.Exceptions;
-using BatchDownloaderUC.Models; 
+using BatchDownloaderUC.Models;
+using BatchDownloaderUC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,13 +14,14 @@ using System.Windows.Forms;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
 
-namespace BatchDownloaderUC.Protocols
+namespace BatchDownloaderUC.Downloader.Protocols
 {
-    public class FTPDownloader : IDownloader
+    public class FTPDownloader : Downloader
     {
-        public FTPDownloader()
+
+        internal FTPDownloader()
         {
-            NetworkChange.NetworkAvailabilityChanged += this.NetworkAvailabilityChanged;
+            NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChanged;
         }
 
         #region Contract methods
@@ -27,16 +29,29 @@ namespace BatchDownloaderUC.Protocols
         protected override void AddDownloadToList(string url, string destination, string username, string password)
         {
             Credentials = new NetworkCredential(username, password);
-            foreach (Download download in GetFTPDownloadTree(new List<Download>(), Credentials, destination, url, url))
+            try
             {
-                try
+                foreach (Download download in GetFTPDownloadTree(new List<Download>(), Credentials, destination, url, url))
                 {
-                    DownloadingProcess.AddDownloadToList(download);
+                    try
+                    {//this inner try catch will prevent the rest of the downloads to not be added in case this one fails
+                        string newDestination = download.Destination.FullPath;
+                        download.Destination.FullPath = destination;
+                        DownloadsController.AddDownloadToList(download);
+                        download.Destination.FullPath = newDestination;
+                    }
+                    catch (Exception ex)
+                    {
+                        OnProcessError(new DownloadErrorEventArgs(ex));
+                    }
                 }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("logged in"))
+                    throw new DownloaderUCException(ErrorType.NotLoggedIn);
+                else
                     DownloaderUCException.Throw(ex);
-                }
             }
         }
 
@@ -72,7 +87,7 @@ namespace BatchDownloaderUC.Protocols
             try
             {
                 //a few settings are needed to start a FTP download
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(CurrentDownload.RemoteFileInfo.Url);
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(DownloadsController.CurrentDownload.RemoteFileInfo.Url);
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
                 request.UsePassive = false;
                 request.UseBinary = true;// use true for .zip file or false for a text file
@@ -91,11 +106,11 @@ namespace BatchDownloaderUC.Protocols
                         {
                             //the directory will be created.
                             //now this mirrors the whole tree from the Url selected (the root) into the specified destination folder
-                            Directory.CreateDirectory(CurrentDownload.Destination.FullPath);
+                            Directory.CreateDirectory(DownloadsController.CurrentDownload.Destination.FullPath);
                             //repeated names will be renamed
                             
 
-                            using (FileStream outputStream = new FileStream(GetDistinguishedFileNameForSaving(), FileMode.Create))
+                            using (FileStream outputStream = new FileStream(UpdateFileNameWithDistinguishedName(), FileMode.Create))
                             {
                                 int readCount = 0;  //bytes read from buffer
                                 long totalWrittenBytesCount = 0; //total bytes read
@@ -109,7 +124,7 @@ namespace BatchDownloaderUC.Protocols
                                     if (backgroundWorker.CancellationPending)
                                     {
                                         //cancelation was called. stop everything and report a cancel event to the view
-                                        CurrentDownload.ChangeState(DownloadState.Canceled);
+                                        DownloadsController.CurrentDownload.ChangeState(DownloadState.Canceled);
                                         backgroundWorker.ReportProgress(0, true);
                                         e.Cancel = true;
                                         break;
@@ -127,7 +142,7 @@ namespace BatchDownloaderUC.Protocols
 
                                     //if not for this, the view simply freezes. the lower 
                                     //this number is (sleep == 30), more responsive is the UI, but slower the download
-                                    if (sleep == 20)
+                                    if (sleep == 15)
                                     {
                                         sleep = 1;
                                         Thread.Sleep(1); //a fraction of 1/30 milisecond)
@@ -144,10 +159,10 @@ namespace BatchDownloaderUC.Protocols
                 //IOException means the disk is FULL. 
                 //the state will change with a message to the view can show in some sort of datagrid
                 //Changestate will delete the partial data
-                CurrentDownload.ChangeState(DownloadState.Error, true, Enums.GetEnumDescription(ErrorType.InsufficientDiskSpace));
+                DownloadsController.CurrentDownload.ChangeState(DownloadState.Error, true, Enums.GetEnumDescription(ErrorType.InsufficientDiskSpace));
                 //this is a hack to access the view under the same thread of the background worker.
                 //the UI thread is only accessible from the events Report and Completed fired by the BW
-                backgroundWorker.ReportProgress(0, new DownloadErrorEventArgs(ErrorType.InsufficientDiskSpaceFor, CurrentDownload.RemoteFileInfo.FileFullName, ex));
+                backgroundWorker.ReportProgress(0, new DownloadErrorEventArgs(ErrorType.InsufficientDiskSpaceFor, DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName, ex));
                 //Disk is full = cancel
                 e.Cancel = true;
                 backgroundWorker.CancelAsync();
@@ -155,12 +170,12 @@ namespace BatchDownloaderUC.Protocols
             catch (Exception ex)
             {
                 //on regular unpredicted exceptions, the client will also be updated
-                string name = CurrentDownload.RemoteFileInfo.FileFullName;
-                CurrentDownload.ChangeState(DownloadState.Error, true, Enums.GetEnumDescription(ErrorType.GeneralErrorOnDownload));
-                if (CurrentDownload.DownloadState == DownloadState.Canceled)
+                string name = DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName;
+                DownloadsController.CurrentDownload.ChangeState(DownloadState.Error, true, Enums.GetEnumDescription(ErrorType.GeneralErrorOnDownload));
+                if (DownloadsController.CurrentDownload.DownloadState == DownloadState.Canceled)
                     backgroundWorker.ReportProgress(0, name);
                 else
-                    backgroundWorker.ReportProgress(0, new DownloadErrorEventArgs(ErrorType.GeneralErrorOnDownload, CurrentDownload.RemoteFileInfo.FileFullName, ex));
+                    backgroundWorker.ReportProgress(0, new DownloadErrorEventArgs(ErrorType.GeneralErrorOnDownload, DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName, ex));
             }
         }
         /// <summary>
@@ -180,17 +195,18 @@ namespace BatchDownloaderUC.Protocols
                 (long)Math.Round(bufferLength / DownloadSub.TotalMilliseconds) * 10000
                 : 0;
             //the line below is always needed for those equations
-            CurrentDownload.BytesReceived = progress;
+            DownloadsController.CurrentDownload.BytesReceived = progress;
             backgroundWorker.ReportProgress(0, new DownloaderEventArgs(
-            CurrentDownload.GetRemainingTimeString(speed),
-            DownloadingProcess.GetRemainingTimeString(speed),
-            speed > 0 ? Functions.ConvertSizeToUnit(speed) : ""));
+            DownloadsController.CurrentDownload.GetRemainingTimeString(speed),
+            DownloadsController.GetRemainingTimeString(speed),
+            speed > 0 ? Functions.ConvertSizeToUnit(speed) : "",
+            DownloadsController.CurrentDownload.PercentCompleted(), DownloadsController.PercentCompleted()));
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             //when it finishes the current ftp download
-            CurrentDownload.ChangeState(DownloadState.Completed);
+            DownloadsController.CurrentDownload.ChangeState(DownloadState.Completed);
             //start the next one
             StartDownloading();
         }
@@ -233,18 +249,20 @@ namespace BatchDownloaderUC.Protocols
 
                 //the name should be escaped to compose a url. 
                 //ex: "this folder has spaces", should be "this%20folder%20has%20spaces" in the url
-                string name = System.Uri.EscapeDataString(line.Replace(tokens[0], "").Replace(tokens[1], "").Replace(tokens[2], "").Trim());
+                string name = line.Replace(tokens[0], "").Replace(tokens[1], "").Replace(tokens[2], "").Trim();
                 //the same way we have to unescape to represent a directory. it's just the other way around
                 string ftpFolder = System.Uri.UnescapeDataString(url.Replace(rootUrl, ""));
                 //full url
-                string fileUrl = url + name;
-                string fullPath = destination + "/" + ftpFolder;
+                string fileUrl = url + System.Uri.EscapeDataString(name);
+                string fullPath = Path.Combine(destination,ftpFolder);
 
                 //if it is a DIR, enter the recursion by adding a new child
                 if (dirOrSize == "<DIR>")
                     return GetFTPDownloadTree(downloads, credentials, destination, fileUrl, url);
                 else
-                    downloads.Add(new Download(new Destination(fullPath), new RemoteFileInfo(fileUrl, name, long.Parse(dirOrSize))));
+                    downloads.Add(new Download(
+                        new Destination(fullPath), 
+                        new RemoteFileInfo(fileUrl, name, long.Parse(dirOrSize))));
 
             }
             return downloads;

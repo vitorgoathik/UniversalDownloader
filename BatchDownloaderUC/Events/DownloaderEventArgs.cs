@@ -12,11 +12,16 @@ namespace BatchDownloaderUC.Events
         public readonly string EstimatedTimeCurrentDownload;
         public readonly string EstimatedTimeTotal;
         public readonly string SpeedInUnit;
-        public DownloaderEventArgs(string estimatedTimeCurrentDownload, string estimatedTimeTotal, string speedInUnit)
+        public readonly int PercentCompletedCurrentDownload;
+        public readonly int PercentCompletedTotal;
+        public DownloaderEventArgs(string estimatedTimeCurrentDownload, string estimatedTimeTotal, 
+            string speedInUnit, int percentCompletedCurrentDownload, int percentCompletedTotal)
         {
             EstimatedTimeTotal = estimatedTimeTotal;
             EstimatedTimeCurrentDownload  = estimatedTimeCurrentDownload;
             SpeedInUnit = speedInUnit;
+            PercentCompletedCurrentDownload = percentCompletedCurrentDownload;
+            PercentCompletedTotal = percentCompletedTotal;
         }
     }
 }

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BatchDownloaderUC.Protocols
+namespace BatchDownloaderUC.Downloader.Protocols
 {
-    public class SFTPDownloader : IDownloader
+    public class SFTPDownloader : Downloader
     {
         #region StartNextDownloadSftp
 

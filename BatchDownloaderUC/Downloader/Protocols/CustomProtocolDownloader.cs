@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BatchDownloaderUC.Protocols.CustomProtocal
+namespace BatchDownloaderUC.Downloader.Protocols
 {
-    internal class CustomProtocolDownloader : IDownloader
+    internal class CustomProtocolDownloader : Downloader
     {
         public override void AbortCurrentDownload()
         {

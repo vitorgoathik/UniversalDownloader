@@ -1,5 +1,6 @@
-﻿using BatchDownloaderUC.Exceptions; 
+﻿using BatchDownloaderUC.Exceptions;
 using System;
+using System.IO;
 using System.Net;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
@@ -29,7 +30,7 @@ namespace BatchDownloaderUC.Models
         public double ElapsedTimeInSeconds { get; set; }
 
         #endregion
-        #region Constructors
+        #region Constructor
 
 
         internal Download(Destination destination, RemoteFileInfo remoteFileInfo)
@@ -38,6 +39,7 @@ namespace BatchDownloaderUC.Models
             this.RemoteFileInfo = remoteFileInfo;
             DownloadState = DownloadState.Pending;
         }
+
         #endregion
         #region Methods and functions
 
@@ -77,12 +79,12 @@ namespace BatchDownloaderUC.Models
                         //deletes partial data on error
                         StateMessage = stateMessage;
                         if (delete)
-                            System.IO.File.Delete(Destination.FullPath + "/" +  RemoteFileInfo.FileFullName);
+                            System.IO.File.Delete(Path.Combine(Destination.FullPath,RemoteFileInfo.FileFullName));
                         break;
                     case DownloadState.Canceled:
                         //deletes partial data on cancel
                         if (DownloadState == DownloadState.Started || DownloadState == DownloadState.Deleted)
-                            System.IO.File.Delete(Destination.FullPath + "/" + RemoteFileInfo.FileFullName);
+                            System.IO.File.Delete(Path.Combine(Destination.FullPath, RemoteFileInfo.FileFullName));
                         break;
                     case DownloadState.Deleted:
                         if (DownloadState == DownloadState.Completed) return;

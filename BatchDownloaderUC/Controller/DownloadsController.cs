@@ -1,4 +1,5 @@
 ﻿using BatchDownloaderUC.Exceptions;
+using BatchDownloaderUC.Models;
 using BatchDownloaderUC.Utilities;
 using System;
 using System.Collections.Generic;
@@ -9,17 +10,26 @@ using System.Threading.Tasks;
 using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
 
-namespace BatchDownloaderUC.Models
+namespace BatchDownloaderUC.Controller
 {
-    public class DownloadingProcess
+    public class DownloadsController
     {
+        static DownloadsController instance;
+        internal static DownloadsController Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new DownloadsController();
+                return instance;
+            }
+        }
         /// <summary>
         /// Private downloads list
         /// </summary>
         private readonly List<Download> AllDownloads = new List<Download>();
-
+        public Download CurrentDownload { get; set; }
         internal Download NextDownload => AllDownloads.FirstOrDefault(o => o.DownloadState == DownloadState.Pending);
-        internal Download StartedDownload => AllDownloads.FirstOrDefault(o => o.DownloadState == DownloadState.Started);
 
         /// <summary>
         /// Downloads read-only collection
@@ -34,20 +44,13 @@ namespace BatchDownloaderUC.Models
 
         internal virtual void AddDownloadToList(Download download)
         {
-            //basic validations
-            if (string.IsNullOrEmpty(download.RemoteFileInfo.Url)) throw new DownloaderUCException(ErrorType.EmptyField, "Url");
+            
             if (!ValidationTests.IsUrlValid(download.RemoteFileInfo.Url)) throw new DownloaderUCException(ErrorType.InvalidField, "Url");
             if (string.IsNullOrEmpty(download.Destination.FullPath)) throw new DownloaderUCException(ErrorType.EmptyField, "Destination");
             if (!ValidationTests.IsDestinationValid(download.Destination.FullPath)) throw new DownloaderUCException(ErrorType.InvalidField, "Destination");
+            if (download.RemoteFileInfo.SizeBytes == -1) throw new DownloaderUCException(ErrorType.InvalidField, "Url");
 
-            try
-            {
-                CheckSpaceToAddDownload(download);
-            }
-            catch (Exception ex)
-            {
-                DownloaderUCException.ThrowNewGeneral(new DownloaderUCException(ErrorType.GeneralErrorAddingDownload, ex));
-            }
+            CheckSpaceToAddDownload(download);
         }
 
 
@@ -93,17 +96,10 @@ namespace BatchDownloaderUC.Models
         }
         public virtual int PercentCompleted()
         {
-            try
-            {
-                long TotalSizeBytesRemainingToDownload = this.TotalSizeBytesRemainingToDownload();
-                long TotalSizeBytes = this.TotalSizeBytes();
-                int percent = (int)Math.Round((1 - ((double)(TotalSizeBytesRemainingToDownload) / TotalSizeBytes)) * 100);
-                return (percent >= 0 && percent <= 100) ? percent : 0;
-            }
-            catch (Exception e)
-            {
-                throw new Exception("PercentCompleted: Error processing SizeBytes and BytesReceived");
-            }
+            long totalSizeBytesRemainingToDownload = TotalSizeBytesRemainingToDownload();
+            long totalSizeBytes = TotalSizeBytes();
+            int percent = (int)Math.Round((1 - ((double)(totalSizeBytesRemainingToDownload) / totalSizeBytes)) * 100);
+            return (percent >= 0 && percent <= 100) ? percent : 0;
         }
         /// <summary>
         /// Returns the amount of time remaning.
@@ -120,15 +116,13 @@ namespace BatchDownloaderUC.Models
 
         internal virtual void ClearDownloads()
         {
-            AllDownloads.Where(o => o.DownloadState != DownloadState.Error 
-                                    && o.DownloadState != DownloadState.Canceled
-                                    && o.DownloadState != DownloadState.Deleted).ToList()
+            AllDownloads.Where(o => o.DownloadState == DownloadState.Completed).ToList()
                 .ForEach(o => o.ChangeState(DownloadState.Closed));
         }
 
         internal virtual bool CancelDownloads(List<int> fileIndexes)
         {
-            bool canceledCurrent = (fileIndexes.Contains(AllDownloads.FindIndex(o => o == StartedDownload)));
+            bool canceledCurrent = (fileIndexes.Contains(AllDownloads.FindIndex(o => o == CurrentDownload)));
             fileIndexes.ForEach(o => AllDownloads[o].ChangeState(DownloadState.Deleted));
             return canceledCurrent;
         }

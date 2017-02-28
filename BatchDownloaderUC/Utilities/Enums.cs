@@ -22,7 +22,7 @@ namespace Utilities.BatchDownloaderUC
             InvalidField,
             [Description("Field cannot be empty: {0}")]
             EmptyField,
-            [Description("Invalid FTP username/password")]
+            [Description("Invalid username/password")]
             NotLoggedIn,
             [Description("Insufficient space in disk")]
             InsufficientDiskSpace,
@@ -36,6 +36,8 @@ namespace Utilities.BatchDownloaderUC
             GeneralErrorAddingDownload,
             [Description("There was an error when downloading this file: {0}")]
             GeneralErrorOnDownload,
+            [Description("There was a general error in the download")]
+            GeneralErrorOnDownloading,
             [Description("Requested protocol not supported")]
             ProtocolNotImplemented,
         }

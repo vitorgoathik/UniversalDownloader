@@ -1,5 +1,6 @@
 ﻿using BatchDownloaderUC.Exceptions;
 using BatchDownloaderUC.Models;
+using BatchDownloaderUC.Controller;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -7,8 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UniversalDownloader;
 using static Utilities.BatchDownloaderUC.Enums;
+using Utilities.BatchDownloaderUC;
 
 namespace UniversalDownloaderUnitTests
 {
@@ -68,7 +69,7 @@ namespace UniversalDownloaderUnitTests
                 });
 
 
-            Download downloadState = new Download(new BatchDownloaderUC.Models.Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("", "anyname.txt", 100));
+            Download downloadState = new Download(new BatchDownloaderUC.Models.Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 100));
 
 
 
@@ -81,14 +82,14 @@ namespace UniversalDownloaderUnitTests
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Deleted);
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Deleted);
 
-                    StreamWriter writer = File.CreateText(Functions.GetDownloadsFolder()+"/anyname.txt");
+                    StreamWriter writer = File.CreateText("C:/ anyname.txt");
                     writer.Write("sdasdasdasdasdasd");
                     writer.Close();
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Error);
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Error);
 
-                    downloadState = new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("", "anyname.txt", 123));
-                    writer = File.CreateText(Functions.GetDownloadsFolder() + "/anyname.txt");
+                    downloadState = new Download(new Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 123));
+                    writer = File.CreateText("C:/anyname.txt");
                     writer.Write("sdasdasdasdasdasd");
                     writer.Close();
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Canceled);
@@ -99,8 +100,8 @@ namespace UniversalDownloaderUnitTests
             Assert.Throws(typeof(IOException),
                 delegate
                 {
-                    downloadState = new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("", "anyname.txt", 123));
-                    StreamWriter writer = File.CreateText(Functions.GetDownloadsFolder() + "/anyname.txt");
+                    downloadState = new Download(new Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 123));
+                    StreamWriter writer = File.CreateText("C:/anyname.txt");
                     writer.Write("sdasdasdasdasdasd");
                     Assert.AreEqual(downloadState.DownloadState, Utilities.BatchDownloaderUC.Enums.DownloadState.Pending);
                     downloadState.ChangeState(Utilities.BatchDownloaderUC.Enums.DownloadState.Started);
@@ -109,7 +110,7 @@ namespace UniversalDownloaderUnitTests
                 });
 
 
-            downloadState = new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("", "anyname.txt", 100));
+            downloadState = new Download(new Destination("C:/"), new RemoteFileInfo("", "anyname.txt", 100));
             downloadState.BytesReceived = 20;
 
             Assert.DoesNotThrow(
@@ -123,58 +124,6 @@ namespace UniversalDownloaderUnitTests
                 {
                     Assert.AreEqual(downloadState.GetRemainingTimeString(0), "");
                 });
-        }
-
-        [Test]
-        public void DownloadingProcessUnitTests()
-        {
-            DownloadingProcess downloadingProcess = new DownloadingProcess();
-            Assert.DoesNotThrow(
-                delegate
-                {
-                    Assert.AreEqual(downloadingProcess.StartedDownload,null);
-                });
-            Assert.DoesNotThrow(
-                delegate
-                {//null
-                    Assert.AreEqual(downloadingProcess.StartedDownload, null);
-                });
-
-            try
-            {//invalid fields
-                downloadingProcess.AddDownloadToList(new Download(new Destination("edwe"), new RemoteFileInfo("werfwerf", "asdasd", 234)));
-            }
-            catch (DownloaderUCException e)
-            {
-                Assert.AreEqual(e.Error, ErrorType.InvalidField);
-            }
-            Assert.Throws(typeof(DownloaderUCException),
-                delegate
-                {//insufficient space exception
-                    downloadingProcess.AddDownloadToList(new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("https://www.google.com", "anyname.exe", long.MaxValue)));
-                });
-            try
-            {
-                //CheckSpaceToAddDownload
-                downloadingProcess.AddDownloadToList(new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("https://www.google.com", "anyname.exe", long.MaxValue)));
-            }
-            catch (DownloaderUCException e)
-            {
-                Assert.AreEqual(e.Error, ErrorType.InsufficientDiskSpaceFor);
-            }
-
-
-            //testing the remaining bytes. will add 3 downloads, and set one to started and receive 10 bytes on it.
-            downloadingProcess = new DownloadingProcess();
-            downloadingProcess.AddDownloadToList(new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("https://www.google.com", "anyname.exe", 50)));
-            Download download = new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("https://www.google.com", "anyname.exe", 500));
-            downloadingProcess.AddDownloadToList(download);
-            download.ChangeState(DownloadState.Started);
-            downloadingProcess.AddDownloadToList(new Download(new Destination(Functions.GetDownloadsFolder()), new RemoteFileInfo("https://www.google.com", "anyname.exe", 100)));
-            Assert.AreEqual(downloadingProcess.DownloadsCollection.Count, 3);
-            download.BytesReceived = 10;
-            Assert.AreEqual(downloadingProcess.TotalSizeBytesRemainingToDownload(), 640);
-
         }
 
     }

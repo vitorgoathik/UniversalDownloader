@@ -1,41 +1,33 @@
-﻿using BatchDownloaderUC;
-using BatchDownloaderUC.Events;
-using BatchDownloaderUC.Models;
-using BatchDownloaderUC.Utilities;
+﻿using BatchDownloaderUC.Events;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using UniversalDownloader;
-using Utilities.BatchDownloaderUC;
 using static Utilities.BatchDownloaderUC.Enums;
+using BatchDownloaderUC.Downloader;
+using System.IO;
 
 namespace UniversalDownloader
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
-        IDownloader downloaderUC;
+        Downloader downloaderUC;
 
         string speedInUnit = "", estimatedTimeCurrentDownload = "", estimatedTimeTotal = "";
-        public Form1()
+        public MainWindow()
         {
             InitializeComponent();
-            DestinationTextBox.Text = Functions.GetDownloadsFolder();
+            DestinationTextBox.Text = GetDownloadsFolder();
             DownloadProgressBar.Maximum = 100;
             OverallProgressProgressBar.Maximum = 100;
         }
-        DownloadingProcess downloadingProcess;
 
 
         private void LoadDataGrid()
         {
             List<DownloadDataGridItem> dgList = new List<DownloadDataGridItem>();
-            downloaderUC.DownloadingProcess.DownloadsCollection.ToList().ForEach(o => dgList.Add(new DownloadDataGridItem()
+            downloaderUC.DownloadsController.DownloadsCollection.ToList().ForEach(o => dgList.Add(new DownloadDataGridItem()
             {
                 FileName = o.RemoteFileInfo.FileFullName,
                 FileSize = o.RemoteFileInfo.SizeInUnit,
@@ -54,33 +46,30 @@ namespace UniversalDownloader
         {
             try
             {
-                if (downloaderUC == null)
-                    InitializeDownloader(urlTextBox.Text);
-                //This is the core of the downloader UC. 
+                InitializeDownloader(urlTextBox.Text);
+                //This is the initial call of the downloader UC. 
                 //I have made it so there is no other way to hack into adding a new download from the client
                 downloaderUC.AddDownload(urlTextBox.Text, DestinationTextBox.Text, UsernameTextBox.Text, passwordTextBox.Text);
             }
             catch (Exception ex)
             {
-                //exceptions like empty fields, invalid fields, no disk space, and exceptions in general
-                validationLabel.ForeColor = Color.Red;
-                validationLabel.Text = ex.Message;
+                SetErrorMessage(ex.Message);
             }
         }
 
         private void InitializeDownloader(string url)
         {
-            downloaderUC = ((IDownloader)ProtocolSelector.GetInstance(url));
-
-            downloaderUC.DownloadAdded += DownloaderUC_DownloadAdded;
-            downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
+                downloaderUC = ((Downloader)ProtocolDownloaderManager.GetInstance(url));
+                
+                downloaderUC.DownloadAdded += DownloaderUC_DownloadAdded;
+                downloaderUC.ProcessStarted += DownloaderUC_ProcessStarted;
             downloaderUC.DownloadStarted += DownloaderUC_DownloadStarted;
-            downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
-            downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
-            downloaderUC.DownloadingProcessCompleted += DownloaderUC_DownloadingProcessCompleted;
-            downloaderUC.ProcessError += DownloaderUC_ProcessError;
-            downloaderUC.DownloadCanceled += DownloaderUC_DownloadCanceled;
-            downloaderUC.DownloadsUpdated += DownloaderUC_DownloadsUpdated;
+                downloaderUC.ProgressChanged += DownloaderUC_ProgressChanged;
+                downloaderUC.OverallProgressChanged += DownloaderUC_OverallProgressChanged;
+                downloaderUC.DownloadsControllerCompleted += DownloaderUC_DownloadsControllerCompleted;
+                downloaderUC.ProcessError += DownloaderUC_ProcessError;
+                downloaderUC.DownloadCanceled += DownloaderUC_DownloadCanceled;
+                downloaderUC.DownloadsUpdated += DownloaderUC_DownloadsUpdated;
         }
 
         private void SaveAsButton_Click(object sender, EventArgs e)
@@ -149,8 +138,8 @@ namespace UniversalDownloader
         {
             //next, the download itself starts
             validationLabel.ForeColor = Color.DarkGreen;
-            validationLabel.Text = String.Format("Total file size: {0}", downloaderUC.CurrentDownload.RemoteFileInfo.SizeInUnit);
-            fileNameLabel.Text = downloaderUC.CurrentDownload.RemoteFileInfo.FileFullName;
+            validationLabel.Text = String.Format("Total file size: {0}", downloaderUC.DownloadsController.CurrentDownload.RemoteFileInfo.SizeInUnit);
+            fileNameLabel.Text = downloaderUC.DownloadsController.CurrentDownload.RemoteFileInfo.FileFullName;
         }
         private void DownloaderUC_ProgressChanged(object sender, DownloaderEventArgs e)
         {
@@ -164,10 +153,10 @@ namespace UniversalDownloader
             if (e.EstimatedTimeTotal != "")
                 estimatedTimeTotal = e.EstimatedTimeTotal;
 
-            DownloadProgressBar.Value = downloaderUC.CurrentDownload.PercentCompleted();
+            DownloadProgressBar.Value = e.PercentCompletedCurrentDownload;
             ProgressLabel.Text = DownloadProgressBar.Value + "%";
 
-            OverallProgressProgressBar.Value = downloaderUC.DownloadingProcess.PercentCompleted();
+            OverallProgressProgressBar.Value = e.PercentCompletedTotal;
             OverallProgressPercentLabel.Text = OverallProgressProgressBar.Value + "%";
 
         }
@@ -177,7 +166,7 @@ namespace UniversalDownloader
             //when the overall process changes, it doesnt necessarily means all downloads have finished
         }
 
-        private void DownloaderUC_DownloadingProcessCompleted(object sender)
+        private void DownloaderUC_DownloadsControllerCompleted(object sender)
         {
             //but when it is completed, it does
             OverallProgressPercentLabel.Text = ProgressLabel.Text = "100%";
@@ -189,17 +178,7 @@ namespace UniversalDownloader
 
         private void DownloaderUC_ProcessError(object sender, DownloadErrorEventArgs e)
         {
-            //a handled error will call this event
-            switch(e.ErrorType)
-            {
-                case ErrorType.NotLoggedIn:
-                    
-                default:
-                    validationLabel.ForeColor = Color.Red;
-                    validationLabel.Text = e.ErrorMessage;
-                break;
-            }
-
+            SetErrorMessage(e.ErrorMessage);
         }
 
         private void DownloaderUC_DownloadCanceled(object sender, DownloadCanceledEventArgs e)
@@ -215,8 +194,27 @@ namespace UniversalDownloader
             LoadDataGrid();
         }
 
+        void SetErrorMessage(string message)
+        {
+            validationLabel.Visible = true;
+            validationLabel.ForeColor = Color.Red;
+            validationLabel.Text = message;
+        }
         #endregion
-        
+
+        public string GetDownloadsFolder()
+        {
+            try
+            {
+                string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string pathDownload = Path.Combine(pathUser, "Downloads");
+                return pathDownload;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
     }
     public class DownloadDataGridItem
     {
